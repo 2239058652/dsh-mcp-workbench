@@ -21,6 +21,11 @@
 
 [English](README.md) · [简体中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
+```sh
+dsh plugin --profile <name> add dsh-mcp-panel
+```
+
+
 </div>
 
 ---
@@ -28,6 +33,13 @@
 **📖 Base de conocimiento del ecosistema** — datos medidos, no marketing: [guía de desarrollo · datos de selección · criterios de mantenimiento](https://perrylink.github.io/dsh-plugin-guide/).
 
 <!-- star-cta -->
+## Install & uninstall
+
+- **Canal git** (último `main`): `dsh plugin --profile web add github:PerryLink/dsh-mcp-panel` — el script `prepare` construye solo con dependencias de producción.
+- **Canal npm** (versiones publicadas): `dsh plugin --profile web add dsh-mcp-panel`.
+- **Canal tarball**: `pnpm pack` en este repo, luego `dsh plugin --profile web add ./dsh-mcp-panel-<version>.tgz`.
+- **Desinstalar**: elimina la fila `mcp-panel` de `cordis.patch.yml` (la superficie web la recarga en caliente), borra el paquete del `node_modules` del perfil y verifica con `dsh web --dump-config` que no quede ninguna fila `mcp-panel`.
+
 ## ⭐ 如果它帮到了你
 
 Este plugin forma parte de la [familia de plugins DSH](https://github.com/PerryLink) (más de 40, todos Apache-2.0). Si te resulta útil, **dale una estrella**: no desbloquea nada, pero ayuda a que la siguiente persona lo encuentre antes.
@@ -136,13 +148,6 @@ Luego abre **Ajustes → Plugins → MCP**, o ejecuta:
 /mcp everything health
 /mcp everything call echo '{"message": "hi"}'
 ```
-
-## Install & uninstall
-
-- **Canal git** (último `main`): `dsh plugin --profile web add github:PerryLink/dsh-mcp-panel` — el script `prepare` construye solo con dependencias de producción.
-- **Canal npm** (versiones publicadas): `dsh plugin --profile web add dsh-mcp-panel`.
-- **Canal tarball**: `pnpm pack` en este repo, luego `dsh plugin --profile web add ./dsh-mcp-panel-<version>.tgz`.
-- **Desinstalar**: elimina la fila `mcp-panel` de `cordis.patch.yml` (la superficie web la recarga en caliente), borra el paquete del `node_modules` del perfil y verifica con `dsh web --dump-config` que no quede ninguna fila `mcp-panel`.
 
 ## Configuration
 

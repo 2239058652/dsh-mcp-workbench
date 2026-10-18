@@ -21,6 +21,11 @@
 
 [English](README.md) · [简体中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
+```sh
+dsh plugin --profile <name> add dsh-mcp-panel
+```
+
+
 </div>
 
 ---
@@ -28,6 +33,13 @@
 **📖 Base de conhecimento do ecossistema** — dados medidos, não marketing: [guia de desenvolvimento · dados de seleção · critérios de manutenção](https://perrylink.github.io/dsh-plugin-guide/).
 
 <!-- star-cta -->
+## Install & uninstall
+
+- **Canal git** (último `main`): `dsh plugin --profile web add github:PerryLink/dsh-mcp-panel` — o script `prepare` constrói apenas com dependências de produção.
+- **Canal npm** (versões publicadas): `dsh plugin --profile web add dsh-mcp-panel`.
+- **Canal tarball**: `pnpm pack` neste repo, depois `dsh plugin --profile web add ./dsh-mcp-panel-<version>.tgz`.
+- **Desinstalar**: remova a linha `mcp-panel` do `cordis.patch.yml` (a superfície web a recarrega em quente), apague o pacote do `node_modules` do perfil e verifique com `dsh web --dump-config` que não reste nenhuma linha `mcp-panel`.
+
 ## ⭐ 如果它帮到了你
 
 Este plugin faz parte da [família de plugins DSH](https://github.com/PerryLink) (mais de 40, todos Apache-2.0). Se for útil, **deixe uma estrela**: não desbloqueia nada, mas ajuda a próxima pessoa a encontrá-lo.
@@ -136,13 +148,6 @@ Depois abra **Configurações → Plugins → MCP**, ou execute:
 /mcp everything health
 /mcp everything call echo '{"message": "hi"}'
 ```
-
-## Install & uninstall
-
-- **Canal git** (último `main`): `dsh plugin --profile web add github:PerryLink/dsh-mcp-panel` — o script `prepare` constrói apenas com dependências de produção.
-- **Canal npm** (versões publicadas): `dsh plugin --profile web add dsh-mcp-panel`.
-- **Canal tarball**: `pnpm pack` neste repo, depois `dsh plugin --profile web add ./dsh-mcp-panel-<version>.tgz`.
-- **Desinstalar**: remova a linha `mcp-panel` do `cordis.patch.yml` (a superfície web a recarrega em quente), apague o pacote do `node_modules` do perfil e verifique com `dsh web --dump-config` que não reste nenhuma linha `mcp-panel`.
 
 ## Configuration
 

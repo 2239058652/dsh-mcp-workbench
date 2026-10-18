@@ -21,6 +21,11 @@
 
 [English](README.md) · [简体中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
+```sh
+dsh plugin --profile <name> add dsh-mcp-panel
+```
+
+
 </div>
 
 ---
@@ -28,6 +33,13 @@
 **📖 इकोसिस्टम नॉलेज बेस** — मापे गए आँकड़े, मार्केटिंग नहीं: [डेवलपमेंट गाइड · चयन डेटा · रखरखाव मानदंड](https://perrylink.github.io/dsh-plugin-guide/)।
 
 <!-- star-cta -->
+## Install & uninstall
+
+- **git चैनल** (नवीनतम `main`): `dsh plugin --profile web add github:PerryLink/dsh-mcp-panel` — `prepare` स्क्रिप्ट केवल production निर्भरताओं से बिल्ड करती है।
+- **npm चैनल** (प्रकाशित संस्करण): `dsh plugin --profile web add dsh-mcp-panel`।
+- **tarball चैनल**: इस repo में `pnpm pack`, फिर `dsh plugin --profile web add ./dsh-mcp-panel-<version>.tgz`।
+- **अनइंस्टॉल**: `cordis.patch.yml` से `mcp-panel` पंक्ति हटाएँ (वेब सतह इसे हॉट-रीलोड करती है), profile के `node_modules` से पैकेज हटाएँ, और `dsh web --dump-config` से पुष्टि करें कि कोई `mcp-panel` पंक्ति शेष नहीं है।
+
 ## ⭐ 如果它帮到了你
 
 यह प्लगइन [DSH प्लगइन परिवार](https://github.com/PerryLink) का हिस्सा है (40+ प्लगइन, सभी Apache-2.0)। अगर यह उपयोगी लगे, तो **एक स्टार दें** — इससे कोई सुविधा अनलॉक नहीं होती, पर अगला व्यक्ति इसे खोज में आसानी से पा लेता है।
@@ -136,13 +148,6 @@ dsh --profile web --dump-config | grep -A3 'id: mcp-panel'
 /mcp everything health
 /mcp everything call echo '{"message": "hi"}'
 ```
-
-## Install & uninstall
-
-- **git चैनल** (नवीनतम `main`): `dsh plugin --profile web add github:PerryLink/dsh-mcp-panel` — `prepare` स्क्रिप्ट केवल production निर्भरताओं से बिल्ड करती है।
-- **npm चैनल** (प्रकाशित संस्करण): `dsh plugin --profile web add dsh-mcp-panel`।
-- **tarball चैनल**: इस repo में `pnpm pack`, फिर `dsh plugin --profile web add ./dsh-mcp-panel-<version>.tgz`।
-- **अनइंस्टॉल**: `cordis.patch.yml` से `mcp-panel` पंक्ति हटाएँ (वेब सतह इसे हॉट-रीलोड करती है), profile के `node_modules` से पैकेज हटाएँ, और `dsh web --dump-config` से पुष्टि करें कि कोई `mcp-panel` पंक्ति शेष नहीं है।
 
 ## Configuration
 

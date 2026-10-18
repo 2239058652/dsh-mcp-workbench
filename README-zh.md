@@ -23,6 +23,11 @@
 
 [English](README.md) · [简体中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
+```sh
+dsh plugin --profile <name> add dsh-mcp-panel
+```
+
+
 </div>
 
 ---
@@ -30,6 +35,13 @@
 **📖 生态实测知识库**（实测数据，不是营销）：[插件开发指南 · 选型实测数据 · 维护取舍判据](https://perrylink.github.io/dsh-plugin-guide/)。
 
 <!-- star-cta -->
+## Install & uninstall
+
+- **git 通道**（最新 `main`）：`dsh plugin --profile web add github:PerryLink/dsh-mcp-panel` —— `prepare` 脚本只用生产依赖构建。
+- **npm 通道**（发布版本）：`dsh plugin --profile web add dsh-mcp-panel`。
+- **tarball 通道**：在本仓库 `pnpm pack`，再 `dsh plugin --profile web add ./dsh-mcp-panel-<version>.tgz`。
+- **卸载**：从 `cordis.patch.yml` 移除 `mcp-panel` 行（web 面板热重载），从 profile 的 `node_modules` 删除本包，并用 `dsh web --dump-config` 确认没有残留的 `mcp-panel` 行。
+
 ## ⭐ 如果它帮到了你
 
 这个插件是 [DSH 插件家族](https://github.com/PerryLink)的一员（40+ 个，全部 Apache-2.0）。如果你在用，**给个 star** —— 它不会解锁任何功能，但会让下一个人在搜索里更容易找到它。
@@ -138,13 +150,6 @@ dsh --profile web --dump-config | grep -A3 'id: mcp-panel'
 /mcp everything health
 /mcp everything call echo '{"message": "hi"}'
 ```
-
-## Install & uninstall
-
-- **git 通道**（最新 `main`）：`dsh plugin --profile web add github:PerryLink/dsh-mcp-panel` —— `prepare` 脚本只用生产依赖构建。
-- **npm 通道**（发布版本）：`dsh plugin --profile web add dsh-mcp-panel`。
-- **tarball 通道**：在本仓库 `pnpm pack`，再 `dsh plugin --profile web add ./dsh-mcp-panel-<version>.tgz`。
-- **卸载**：从 `cordis.patch.yml` 移除 `mcp-panel` 行（web 面板热重载），从 profile 的 `node_modules` 删除本包，并用 `dsh web --dump-config` 确认没有残留的 `mcp-panel` 行。
 
 ## Configuration
 
