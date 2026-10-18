@@ -62,7 +62,7 @@ Cliente oficial = ponte, este plugin = console: leia o status pelo seam `mcp/sta
 
 | Superfície | Status |
 |---|---|
-| Harness | DeepSeek Harness `dsh-v0.2.1-alpha.1` (verificado em 2026-09-25): as duas réguas de typecheck verdes na face `0.1.6-alpha.2` (este repositório é o canário da família: nenhum erro novo apareceu), 174 testes e a cadeia completa de portas (typecheck / typecheck:ci / test / build / verify / package). A re-verificação do `writePatch` vale nesta linha. Linha de base anterior: `dsh-v0.1.7-alpha.1` (verificado em 2026-09-16). |
+| Harness | DeepSeek Harness `dsh-v0.2.1-rc.2` (verificado 2026-10-18): `engines.dsh >=0.2.1-0 <0.3.0`; os caminhos de compatibilidade P0 têm testes de regressão. |
 | Node | `^22.19.0 \|\| >=24.0.0` |
 | Plataformas | Web GUI (duas faces: host + navegador) |
 | Modelo | Qualquer (o painel é somente leitura; só a saída de `/mcp` é legível pelo modelo) |

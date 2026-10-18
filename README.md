@@ -66,7 +66,7 @@ Official client = bridge, this plugin = console: read status through the `mcp/st
 
 | Surface | Status |
 |---|---|
-| Harness | DeepSeek Harness `dsh-v0.2.1-alpha.1` (verified 2026-09-25): dual typecheck rulers green on the `0.1.6-alpha.2` dev/test face (this repo is the family's canary — no new errors surfaced), 174 tests, and the full gate chain (typecheck / typecheck:ci / test / build / verify / package). The `writePatch` re-verification assertion stands on this line. Previous baseline: `dsh-v0.1.7-alpha.1` (verified 2026-09-16). |
+| Harness | DeepSeek Harness `dsh-v0.2.1-rc.2` (verified 2026-10-18): `engines.dsh >=0.2.1-0 <0.3.0`; the P0 compatibility paths have regression tests. |
 | Node | `^22.19.0 \|\| >=24.0.0` |
 | Platforms | Web GUI (dual-face: host + browser) |
 | Model | Any (the panel is read-only; only `/mcp` output is model-readable) |
