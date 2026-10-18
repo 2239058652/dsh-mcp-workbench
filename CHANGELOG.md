@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.28] - 2026-10-18
+
+### Fixed
+
+- **Build tooling and the subprocess seam are no longer installed twice.** `tsdown`/`typescript` moved to devDependencies, and `@deepseek-ai/dsh-subprocess` moved to peer+dev so the host copy is the only runtime copy. A single checker install no longer pulls a 47 MB build chain through this package.
+
 ## [0.6.27] - 2026-10-18
 
 ### Fixed
