@@ -40,7 +40,7 @@ DeepSeek Harness के आधिकारिक MCP क्लाइंट क�
 
 आधिकारिक क्लाइंट = पुल, यह प्लगइन = कंसोल: `mcp/status` seam से स्थिति पढ़ें, केवल जोड़ने वाले, अनुमोदित प्रोफ़ाइल patch लिखें।
 
-![dsh-mcp-panel का टर्मिनल डेमो: dsh-mcp-panel — install, then /mcp status per server](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-demo.png)
+![dsh-mcp-panel का टर्मिनल डेमो: dsh-mcp-panel — install, then /mcp status per server](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-hero.png)
 
 ![Animated terminal demo of dsh-mcp-panel](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-demo.gif)
 

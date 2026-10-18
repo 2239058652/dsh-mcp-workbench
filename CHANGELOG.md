@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.26] - 2026-10-18
+
+### Changed
+
+- Add a 1280×720 hero and a 960×540, 4-second terminal GIF rendered from the test run; `screenshots.json` is an object array and `capture.json` records the command.
+
+## [0.6.25] - 2026-10-18
+
+### Fixed
+
+- **A timed-out stdio probe now kills the process tree on Windows.** `child.kill()` left the wrapped MCP server and its descendants running; the probe uses `taskkill /T /F` on win32 and still calls `child.kill()` elsewhere (issue #30: orphan processes/GBs of RSS).
+
 All notable changes to this project are documented in this file.
 
 ## [0.6.24] - 2026-10-10

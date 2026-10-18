@@ -44,7 +44,7 @@ The MCP management console for the official DeepSeek Harness MCP client — add,
 
 Official client = bridge, this plugin = console: read status through the `mcp/status` seam, write only append-only, approval-gated profile patches.
 
-![Terminal demo of dsh-mcp-panel: dsh-mcp-panel — install, then /mcp status per server](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-demo.png)
+![Terminal demo of dsh-mcp-panel: dsh-mcp-panel — install, then /mcp status per server](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-hero.png)
 
 ![Animated terminal demo of dsh-mcp-panel](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-demo.gif)
 

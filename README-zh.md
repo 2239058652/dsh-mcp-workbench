@@ -42,7 +42,7 @@
 
 官方 client = 桥接，本插件 = 控制台：经 `mcp/status` seam 读取状态，只写入只追加、走审批的 profile patch。
 
-![dsh-mcp-panel 终端演示：dsh-mcp-panel — install, then /mcp status per server](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-demo.png)
+![dsh-mcp-panel 终端演示：dsh-mcp-panel — install, then /mcp status per server](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-hero.png)
 
 ![Animated terminal demo of dsh-mcp-panel](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-demo.gif)
 

@@ -40,7 +40,7 @@ O console de gerenciamento MCP para o cliente MCP oficial do DeepSeek Harness: a
 
 Cliente oficial = ponte, este plugin = console: leia o status pelo seam `mcp/status`, escreva apenas patches de perfil somente-anexar e com aprovação.
 
-![Demonstração de terminal do dsh-mcp-panel: dsh-mcp-panel — install, then /mcp status per server](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-demo.png)
+![Demonstração de terminal do dsh-mcp-panel: dsh-mcp-panel — install, then /mcp status per server](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-hero.png)
 
 ![Animated terminal demo of dsh-mcp-panel](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-demo.gif)
 
