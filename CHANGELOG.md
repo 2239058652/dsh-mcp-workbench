@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.27] - 2026-10-18
+
+### Fixed
+
+- **`env`/`header` keys are quoted before they enter a generated patch fragment, and control characters are rejected by validation.** The key was interpolated directly as `key:`; a newline could inject a second loader operation instead of staying one map entry. Regression tests cover both validation and rendering.
+
 ## [0.6.26] - 2026-10-18
 
 ### Changed
