@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.29] - 2026-10-19
+
+### Fixed
+
+- **An empty root `cordis.patch.yml` (`[]`) no longer produces invalid YAML after the first MCP server is added (issue #29).** The append writer removes the `[]` sentinel when the file contains only comments plus an empty root list, then appends the first operation. Real rows and comments are untouched; the fresh-file header no longer writes `[]`.
+
 ## [0.6.28] - 2026-10-18
 
 ### Fixed
