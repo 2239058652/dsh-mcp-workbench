@@ -156,7 +156,20 @@ dsh --profile web --dump-config | grep -A3 'id: mcp-panel'
 
 #### विस्तृत उदाहरण
 
-- `/mcp`
+**कमांड**
+
+~~~sh
+/mcp github tools
+~~~
+
+**आउटपुट**
+
+~~~text
+Tools of "github" (1, model-visible public names):
+- mcp__github__create_issue — Create a new issue in a GitHub repository
+~~~
+
+*स्रोत `plugins/dsh-mcp-panel/tests/command.spec.ts:99-110; renderer at src/command.ts:352-360`*
 
 #### संक्षिप्त उदाहरण
 

@@ -156,7 +156,20 @@ São os pontos de entrada reais; instale e chame um.
 
 #### Exemplo detalhado
 
-- `/mcp`
+**Comando**
+
+~~~sh
+/mcp github tools
+~~~
+
+**Saída**
+
+~~~text
+Tools of "github" (1, model-visible public names):
+- mcp__github__create_issue — Create a new issue in a GitHub repository
+~~~
+
+*Observado em `plugins/dsh-mcp-panel/tests/command.spec.ts:99-110; renderer at src/command.ts:352-360`*
 
 #### Exemplos breves
 

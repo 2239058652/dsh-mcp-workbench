@@ -163,7 +163,20 @@ These are the plugin's real entry points; install once, then call one.
 
 #### Detailed example
 
-- `/mcp`
+**Command**
+
+~~~sh
+/mcp github tools
+~~~
+
+**Output**
+
+~~~text
+Tools of "github" (1, model-visible public names):
+- mcp__github__create_issue — Create a new issue in a GitHub repository
+~~~
+
+*Observed from `plugins/dsh-mcp-panel/tests/command.spec.ts:99-110; renderer at src/command.ts:352-360`*
 
 #### Brief examples
 
