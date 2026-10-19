@@ -171,6 +171,22 @@ Tools of "github" (1, model-visible public names):
 
 *स्रोत `plugins/dsh-mcp-panel/tests/command.spec.ts:99-110; renderer at src/command.ts:352-360`*
 
+#### विफलता शाखा
+
+**इनपुट**
+
+~~~text
+/mcp nope tools
+~~~
+
+**आउटपुट**
+
+~~~text
+Unknown MCP server "nope" (configured: github)
+~~~
+
+*स्रोत `plugins/dsh-mcp-panel/src/command.ts:104-105; plugins/dsh-mcp-panel/tests/command.spec.ts:152-157`*
+
 #### संक्षिप्त उदाहरण
 
 - `/mcp <server> tools`

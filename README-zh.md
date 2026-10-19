@@ -173,6 +173,22 @@ Tools of "github" (1, model-visible public names):
 
 *来源 `plugins/dsh-mcp-panel/tests/command.spec.ts:99-110; renderer at src/command.ts:352-360`*
 
+#### 失败分支
+
+**输入**
+
+~~~text
+/mcp nope tools
+~~~
+
+**输出**
+
+~~~text
+Unknown MCP server "nope" (configured: github)
+~~~
+
+*来源 `plugins/dsh-mcp-panel/src/command.ts:104-105; plugins/dsh-mcp-panel/tests/command.spec.ts:152-157`*
+
 #### 简短示例
 
 - `/mcp <server> tools`

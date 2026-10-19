@@ -178,6 +178,22 @@ Tools of "github" (1, model-visible public names):
 
 *Observed from `plugins/dsh-mcp-panel/tests/command.spec.ts:99-110; renderer at src/command.ts:352-360`*
 
+#### Failure branch
+
+**Input**
+
+~~~text
+/mcp nope tools
+~~~
+
+**Output**
+
+~~~text
+Unknown MCP server "nope" (configured: github)
+~~~
+
+*Observed from `plugins/dsh-mcp-panel/src/command.ts:104-105; plugins/dsh-mcp-panel/tests/command.spec.ts:152-157`*
+
 #### Brief examples
 
 - `/mcp <server> tools`
