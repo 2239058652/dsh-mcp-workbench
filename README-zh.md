@@ -54,9 +54,10 @@ dsh plugin --profile <name> add dsh-mcp-panel
 
 官方 client = 桥接，本插件 = 控制台：经 `mcp/status` seam 读取状态，只写入只追加、走审批的 profile patch。
 
-![dsh-mcp-panel 终端演示：dsh-mcp-panel — install, then /mcp status per server](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-hero.png)
+![dsh-mcp-panel 工作流图：安装 → 打开面板 → 操作。](docs/assets/dsh-mcp-panel-flow.svg)
 
-![Animated terminal demo of dsh-mcp-panel](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-demo.gif)
+*工作流概览：安装 → 打开面板 → 操作。下面的示例使用实际命令面。*
+
 
 *同一次运行，动图版。*
 
@@ -150,6 +151,19 @@ dsh --profile web --dump-config | grep -A3 'id: mcp-panel'
 /mcp everything health
 /mcp everything call echo '{"message": "hi"}'
 ```
+
+### 示例
+
+以下为插件真实入口；安装后调用一个即可。
+
+#### 详细示例
+
+- `/mcp`
+
+#### 简短示例
+
+- `/mcp <server> tools`
+- `/mcp <server> health`
 
 ## Configuration
 

@@ -52,9 +52,10 @@ La consola de gestión MCP para el cliente MCP oficial de DeepSeek Harness: aña
 
 Cliente oficial = puente, este plugin = consola: lee el estado por el seam `mcp/status`, escribe solo parches de perfil de solo-anexar y con aprobación.
 
-![Demostración de terminal de dsh-mcp-panel: dsh-mcp-panel — install, then /mcp status per server](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-hero.png)
+![Diagrama de flujo de dsh-mcp-panel: instalar → abrir panel → actuar.](docs/assets/dsh-mcp-panel-flow.svg)
 
-![Animated terminal demo of dsh-mcp-panel](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-demo.gif)
+*Resumen del flujo: instalar → abrir panel → actuar. Los ejemplos siguientes usan la superficie de comandos real.*
+
 
 *La misma ejecución, animada.*
 
@@ -148,6 +149,19 @@ Luego abre **Ajustes → Plugins → MCP**, o ejecuta:
 /mcp everything health
 /mcp everything call echo '{"message": "hi"}'
 ```
+
+### Ejemplos
+
+Son los puntos de entrada reales; instala y llama a uno.
+
+#### Ejemplo detallado
+
+- `/mcp`
+
+#### Ejemplos breves
+
+- `/mcp <server> tools`
+- `/mcp <server> health`
 
 ## Configuration
 

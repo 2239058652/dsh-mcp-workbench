@@ -52,9 +52,10 @@ DeepSeek Harness के आधिकारिक MCP क्लाइंट क�
 
 आधिकारिक क्लाइंट = पुल, यह प्लगइन = कंसोल: `mcp/status` seam से स्थिति पढ़ें, केवल जोड़ने वाले, अनुमोदित प्रोफ़ाइल patch लिखें।
 
-![dsh-mcp-panel का टर्मिनल डेमो: dsh-mcp-panel — install, then /mcp status per server](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-hero.png)
+![dsh-mcp-panel कार्यप्रवाह आरेख: इंस्टॉल → पैनल खोलें → कार्य।](docs/assets/dsh-mcp-panel-flow.svg)
 
-![Animated terminal demo of dsh-mcp-panel](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-demo.gif)
+*कार्यप्रवाह: इंस्टॉल → पैनल खोलें → कार्य। नीचे के उदाहरण वास्तविक कमांड सतह का उपयोग करते हैं।*
+
 
 *वही रन, एनिमेटेड।*
 
@@ -148,6 +149,19 @@ dsh --profile web --dump-config | grep -A3 'id: mcp-panel'
 /mcp everything health
 /mcp everything call echo '{"message": "hi"}'
 ```
+
+### उदाहरण
+
+ये वास्तविक प्रवेश बिंदु हैं; इंस्टॉल के बाद एक चलाएँ।
+
+#### विस्तृत उदाहरण
+
+- `/mcp`
+
+#### संक्षिप्त उदाहरण
+
+- `/mcp <server> tools`
+- `/mcp <server> health`
 
 ## Configuration
 
