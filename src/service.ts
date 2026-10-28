@@ -65,6 +65,7 @@ import type {
   PatchPreview,
   PatchWriteResult,
   ProbeStarted,
+  ReloadResult,
 } from './wire.ts'
 
 declare module '@deepseek-ai/cordis' {
@@ -550,6 +551,37 @@ private readonly trialCaller = createTrialCaller()
   /** Render validation issues as one actionable error. */
   private issueError(resolution: Extract<McpPatchResolution, { ok: false }>): Error {
     return new Error(`dsh-mcp-panel: invalid patch operation — ${resolution.issues.map(issue => issue.text).join(' ')}`)
+  }
+
+  /**
+   * Restart one mcp-client row in place: dispose its fiber (the bridge tears
+   * the transport down) and start it again (a fresh handshake + tool sync).
+   * No config file is written — this is a runtime restart of the row that is
+   * already configured, which is the only reconnect this console performs.
+   *
+   * @param serverName - the row's configured namespace.
+   * @returns the restarted row's identity and a note for the dialog.
+   */
+  async reload(serverName: string): Promise<ReloadResult> {
+    const wanted = serverName.trim()
+    if (wanted === '') throw new Error('dsh-mcp-panel: reload requires a serverName')
+    for (const entry of this.ctx.loader.entries()) {
+      if (entry.options.name !== MCP_CLIENT_MODULE) continue
+      const config = entry.options.config as { serverName?: unknown } | undefined
+      const name = typeof config?.serverName === 'string' ? config.serverName : entry.options.id
+      if (name !== wanted) continue
+      if (entry.disabled) {
+        throw new Error(`dsh-mcp-panel: "${wanted}" is disabled — enable the row before reconnecting`)
+      }
+      entry.fiber?.dispose()
+      await entry.init()
+      return {
+        serverName: wanted,
+        entryId: entry.options.id,
+        note: 'The row was restarted; its tools re-sync after the new handshake.',
+      }
+    }
+    throw new Error(`dsh-mcp-panel: no mcp-client row for "${wanted}" (a leftover namespace has nothing to restart)`)
   }
 
   /** The loader row for one entry id, or undefined when absent or foreign. */

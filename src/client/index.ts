@@ -1,11 +1,11 @@
 /**
  * `dsh-mcp-panel`, browser half: mounts the `mcpPanel` Remote contribution,
- * then registers the MCP management console tab into the Plugins settings
- * section (`settings.plugins.tab`, id `mcp`). All data arrives through the
- * `remote.mcpPanel` namespace — the tab issues no other RPC and holds no
- * state of its own beyond expansion, the editor/trial forms, and the last
- * loaded snapshot. The current session id (for approval routing) is read
- * from the sessions store at call time.
+ * then registers the MCP console as a first-class left-sidebar panel — one
+ * `sidebar.panellist` row whose id addresses the `main` panel key of the
+ * same name. All data arrives through the `remote.mcpPanel` namespace — the
+ * page issues no other RPC and holds no state of its own beyond expansion,
+ * the editor/trial forms, and the last loaded snapshot. The current session
+ * id (for approval routing) is read from the sessions store at call time.
  *
  * @module dsh-mcp-panel/client
  */
@@ -16,10 +16,8 @@ import type { Context as ClientContext } from '@deepseek-ai/cordis'
 // the merged contract).
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
-// Type-only: pulls the 'settings.plugins.tab' SlotMap declaration into this
-// program so the tab registration typechecks against the real declaration.
-import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import { McpPanelTab, type McpPanelTabInjected } from './McpPanelTab.tsx'
+import { McpPanelIcon } from './McpPanelIcon.tsx'
 // The harness locale registry accepts only the 'en' | 'zh' UI language codes
 // today (its LocaleDictOf face), so the tab ships those two dictionaries and
 // follows the app's UI language. The `/mcp` command language is a separate
@@ -34,6 +32,7 @@ import type {
   PatchPreview,
   PatchWriteResult,
   ProbeStarted,
+  ReloadResult,
 } from '../wire.ts'
 
 export type { McpPanelTabInjected, McpPanelTabProps } from './McpPanelTab.tsx'
@@ -66,19 +65,15 @@ export const inject = ['slots', 'locale', 'remote', 'sessions']
  */
 interface McpPanelSlots {
   inject(slot: string, callback: () => unknown): void
-  register(options: {
-    name: 'settings.plugins.tab'
-    id: 'mcp'
-    order: number
-    label: () => string
-    locale: string
-    inject: () => McpPanelTabInjected
-  }, component: unknown): () => void
+  register(options: { name: string; locale: string } & Record<string, unknown>, component: unknown): () => void
 }
+
+/** Main-panel key and the sidebar list id that addresses it (they must match). */
+export const PANEL_ID = 'mcp'
 
 /**
  * Browser plugin body: dictionaries, the scoped stylesheet, the Remote
- * contribution mount, and the settings tab registration.
+ * contribution mount, the left-sidebar entry, and the `main` panel page.
  *
  * @param ctx - client root context.
  */
@@ -112,13 +107,24 @@ export async function apply(ctx: ClientContext): Promise<void> {
       unwrap<PatchWriteResult>(await scope.remote.mcpPanel.writePatch(opJson, confirmed, currentSessionId(scope.get('sessions'))), 'writePatch')
     const callTool: McpPanelTabInjected['callTool'] = async (requestJson) =>
       unwrap<McpTrialResultWire>(await scope.remote.mcpPanel.callTool(requestJson, currentSessionId(scope.get('sessions'))), 'callTool')
-    slots.inject('settings.plugins.tab', () => slots.register({
-      name: 'settings.plugins.tab',
-      id: 'mcp',
-      order: 30,
+    const reloadServer: McpPanelTabInjected['reloadServer'] = async (serverName) =>
+      unwrap<ReloadResult>(await scope.remote.mcpPanel.reload(serverName), 'reload')
+    const injected = (): McpPanelTabInjected => ({ status, probe, previewPatch, writePatch, callTool, reloadServer })
+    // Left-sidebar entry: the list id addresses the matching `main` panel key,
+    // and the sidebar resolves the row label from this registration's metadata.
+    slots.inject('sidebar.panellist', () => slots.register({
+      name: 'sidebar.panellist',
+      id: PANEL_ID,
+      order: 20,
       label: () => t('tab'),
       locale: NS,
-      inject: (): McpPanelTabInjected => ({ status, probe, previewPatch, writePatch, callTool }),
+    }, McpPanelIcon))
+    // The console page itself, opened by that sidebar entry.
+    slots.inject('main', () => slots.register({
+      name: 'main',
+      key: PANEL_ID,
+      locale: NS,
+      inject: injected,
     }, McpPanelTab))
   })
 }

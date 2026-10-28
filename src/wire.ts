@@ -499,6 +499,44 @@ export const MCP_PANEL_CALLTOOL_DESCRIPTOR = Object.freeze({
   sourceLocation: Object.freeze({ file: 'src/wire.ts', line: 1, column: 1 }),
 } as const) satisfies InvocationDescriptor
 
+/** Result of `mcpPanel/reload`: one mcp-client row was restarted in place. */
+export interface ReloadResult {
+  /** Restarted namespace. */
+  serverName: string
+  /** Loader entry id that was restarted. */
+  entryId: string
+  /** One-line note for the dialog. */
+  note: string
+}
+
+/** Strict wire schema for {@link ReloadResult}. */
+export const RELOAD_RESULT_SCHEMA = z.object({
+  serverName: z.string(),
+  entryId: z.string(),
+  note: z.string(),
+})
+
+/**
+ * The `mcpPanel/reload` invocation descriptor: restart one mcp-client row
+ * (dispose its fiber, start it again). No config file is touched — a runtime
+ * restart of the same row is the only reconnect this panel performs.
+ */
+export const MCP_PANEL_RELOAD_DESCRIPTOR = Object.freeze({
+  id: 'dsh-mcp-panel#mcpPanel/reload',
+  service: 'mcpPanel',
+  namespace: 'mcpPanel',
+  method: 'reload',
+  invocation: Object.freeze({ kind: 'direct' }),
+  parameters: Object.freeze([Object.freeze({
+    name: 'serverName',
+    wire: 'serverName',
+    source: 'json',
+    codec: strictCodec('dsh-mcp-panel/types#ReloadServerName', z.string()),
+  } satisfies InvocationDescriptor['parameters'][number])]),
+  result: strictCodec('dsh-mcp-panel/types#ReloadResult', RELOAD_RESULT_SCHEMA),
+  sourceLocation: Object.freeze({ file: 'src/wire.ts', line: 1, column: 1 }),
+} as const) satisfies InvocationDescriptor
+
 /**
  * The canonical invocation list both Typert faces register — the host
  * manifest and the client contribution share these exact descriptor objects,
@@ -510,4 +548,5 @@ export const MCP_PANEL_INVOCATIONS = Object.freeze([
   MCP_PANEL_PREVIEW_DESCRIPTOR,
   MCP_PANEL_WRITE_DESCRIPTOR,
   MCP_PANEL_CALLTOOL_DESCRIPTOR,
+  MCP_PANEL_RELOAD_DESCRIPTOR,
 ])

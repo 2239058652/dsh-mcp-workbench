@@ -133,15 +133,16 @@ describe('presentMcpPanel', () => {
 })
 
 describe('summarizePanel', () => {
-  it('counts connected and errored badges and always reports the total', () => {
+  it('counts connected and errored badges, tool coverage, and the total', () => {
+    const tool = (name: string) => ({ name, description: '' })
     const snapshot: McpPanelSnapshot = { ...SNAPSHOT_BASE,
       observed: false,
       patchFile: null,
       refreshIntervalMs: 0,
       servers: [
-        server({ serverName: 'a', phase: 'connected' }),
+        server({ serverName: 'a', phase: 'connected', toolCount: 3, tools: [tool('mcp__a__1'), tool('mcp__a__2'), tool('mcp__a__3')] }),
         server({ serverName: 'b', phase: 'connected' }),
-        server({ serverName: 'c', phase: 'exhausted' }),
+        server({ serverName: 'c', phase: 'exhausted', toolCount: 1, tools: [tool('mcp__c__1')] }),
         server({ serverName: 'd', fiberPhase: 'failed' }),
         server({ serverName: 'e', phase: 'connecting' }),
         server({ serverName: 'f', enabled: false }),
@@ -150,8 +151,15 @@ describe('summarizePanel', () => {
       probes: [],
     }
     const model = presentMcpPanel(snapshot)
-    expect(summarizePanel(model.servers)).toEqual({ total: 7, connected: 2, errored: 2 })
-    expect(summarizePanel([])).toEqual({ total: 0, connected: 0, errored: 0 })
+    expect(summarizePanel(model.servers)).toEqual({
+      total: 7,
+      connected: 2,
+      errored: 2,
+      withTools: 2,
+      withoutTools: 5,
+      toolTotal: 4,
+    })
+    expect(summarizePanel([])).toEqual({ total: 0, connected: 0, errored: 0, withTools: 0, withoutTools: 0, toolTotal: 0 })
   })
 
   it('agrees with the badge derivation for disabled and leftover rows', () => {
@@ -164,7 +172,7 @@ describe('summarizePanel', () => {
     }
     const model = presentMcpPanel(snapshot)
     expect(model.servers.map(row => row.badge)).toEqual(['disabled', 'unknown'])
-    expect(summarizePanel(model.servers)).toEqual({ total: 2, connected: 0, errored: 0 })
+    expect(summarizePanel(model.servers)).toEqual({ total: 2, connected: 0, errored: 0, withTools: 0, withoutTools: 2, toolTotal: 0 })
   })
 })
 

@@ -16,6 +16,7 @@ import type {
   PatchPreview,
   PatchWriteResult,
   ProbeStarted,
+  ReloadResult,
 } from '../wire.ts'
 
 declare module '@deepseek-ai/dsh-typert-protocol' {
@@ -30,6 +31,8 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     writePatch: (opJson: string, confirmed: boolean, sessionId?: string) => Promise<RemoteResult<PatchWriteResult>>
     /** Trial-call one tool through the official pipeline. */
     callTool: (requestJson: string, sessionId?: string) => Promise<RemoteResult<McpTrialResultWire>>
+    /** Restart one mcp-client row (dispose + start); no config is written. */
+    reload: (serverName: string) => Promise<RemoteResult<ReloadResult>>
   }
   interface TypertRemoteMap {
     'mcpPanel/status': () => Promise<RemoteResult<McpPanelSnapshot>>
@@ -37,6 +40,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'mcpPanel/previewPatch': (opJson: string) => Promise<RemoteResult<PatchPreview>>
     'mcpPanel/writePatch': (opJson: string, confirmed: boolean, sessionId?: string) => Promise<RemoteResult<PatchWriteResult>>
     'mcpPanel/callTool': (requestJson: string, sessionId?: string) => Promise<RemoteResult<McpTrialResultWire>>
+    'mcpPanel/reload': (serverName: string) => Promise<RemoteResult<ReloadResult>>
   }
   interface TypertRemoteNamespaceMap {
     mcpPanel: TypertRemoteNamespace$mcpPanel

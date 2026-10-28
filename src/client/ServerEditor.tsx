@@ -1,4 +1,4 @@
-/** Server CRUD editor: form → patch fragment → copy or approval-gated write. */
+/** Server CRUD editor: form → save-and-apply (or show the fragment to copy). */
 
 import { useState, type ReactNode } from 'react'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
@@ -51,10 +51,8 @@ export function ServerEditor({ t, view, entryId, writeEnabled, actions, onClose,
   const [headerRows, setHeaderRows] = useState<MapRow[]>(() => initialRows(view?.headerKeys ?? []))
   const [preview, setPreview] = useState<PatchPreview | null>(null)
   const [busy, setBusy] = useState(false)
-  const [armed, setArmed] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
-  const [written, setWritten] = useState<PatchWriteResult | null>(null)
 
   const rowsToMap = (rows: MapRow[], existingKeys: readonly string[]): { entries: Record<string, string>; keep: string[] } => {
     const entries: Record<string, string> = {}
@@ -97,11 +95,18 @@ export function ServerEditor({ t, view, entryId, writeEnabled, actions, onClose,
     return isEdit ? { kind: 'edit', entryId, config } : { kind: 'add', config }
   }
 
-  const doPreview = (): void => {
+  // The one field that decides whether the form is runnable at all.
+  const complete = serverName.trim() !== ''
+    && (transport === 'stdio' ? command.trim() !== '' : url.trim() !== '')
+
+  const reset = (): void => {
     setError(null)
     setNotice(null)
-    setWritten(null)
-    setArmed(false)
+  }
+
+  /** Show the fragment without writing it. */
+  const doPreview = (): void => {
+    reset()
     setBusy(true)
     void Promise.resolve().then(() => actions.previewPatch(JSON.stringify(buildOp()))).then(
       (result) => { setPreview(result); setBusy(false) },
@@ -109,20 +114,28 @@ export function ServerEditor({ t, view, entryId, writeEnabled, actions, onClose,
     )
   }
 
-  const doWrite = (): void => {
-    if (preview === null) return
-    setError(null)
-    setNotice(null)
+  /** Save in one step: render the fragment, then append it (approval still applies). */
+  const doSave = (): void => {
+    reset()
     setBusy(true)
-    void Promise.resolve().then(() => actions.writePatch(JSON.stringify(buildOp()), true)).then(
-      (result) => {
-        setWritten(result)
+    const opJson = JSON.stringify(buildOp())
+    void Promise.resolve().then(async () => {
+      const rendered = await actions.previewPatch(opJson)
+      if (rendered.file === null) throw new Error(t('patchFileUnknown'))
+      const written = await actions.writePatch(opJson, true)
+      return { rendered, written }
+    }).then(
+      ({ written }) => {
         setBusy(false)
-        setArmed(false)
-        setNotice(t('writeDone').replace('{file}', result.file).replace('{backup}', result.backupPath))
+        setPreview(null)
+        setNotice(t('writeDone').replace('{file}', written.file).replace('{backup}', written.backupPath))
         onWritten()
+        onClose()
       },
-      (failure: unknown) => { setError(t('writeFailed').replace('{message}', messageOf(failure))); setBusy(false) },
+      (failure: unknown) => {
+        setBusy(false)
+        setError(t('writeFailed').replace('{message}', messageOf(failure)))
+      },
     )
   }
 
@@ -191,42 +204,39 @@ export function ServerEditor({ t, view, entryId, writeEnabled, actions, onClose,
           <input type="number" min={1} value={reconnectAttempts} onChange={(event) => { setReconnectAttempts(event.currentTarget.value) }} />
         </label>
       </div>
+
       <div className="dmcp-editor-actions">
-        <button type="button" className="dmcp-action" onClick={doPreview} disabled={busy}>{t('previewPatch')}</button>
+        <button
+          type="button"
+          className="dmcp-action dmcp-primary"
+          onClick={doSave}
+          disabled={busy || !writeEnabled || !complete}
+        >
+          {busy ? t('saving') : t('writeToProfile')}
+        </button>
+        <button type="button" className="dmcp-action" onClick={doPreview} disabled={busy || !complete}>{t('previewPatch')}</button>
         <button type="button" className="dmcp-action" onClick={onClose} disabled={busy}>{t('cancel')}</button>
       </div>
+
+      {!complete ? <p className="dmcp-hint">{t('requiredMissing')}</p> : null}
+      {!writeEnabled ? <p className="dmcp-error-text">{t('writeDisabled')}</p> : null}
       {error !== null ? <p className="dmcp-error-text" role="alert">{error}</p> : null}
       {notice !== null ? <p className="dmcp-notice">{notice}</p> : null}
+
       {preview !== null ? (
         <div className="dmcp-patch">
-          <p className="dmcp-patch-hint">
+          <p className="dmcp-hint">
             {preview.file === null ? t('patchFileUnknown') : t('patchFor').replace('{file}', preview.file)}
           </p>
           <pre className="dmcp-fragment">{preview.fragment}</pre>
           <div className="dmcp-editor-actions">
             <button type="button" className="dmcp-action" onClick={copy}>{t('copyPatch')}</button>
-            {writeEnabled && preview.file !== null ? (
-              armed ? (
-                <button type="button" className="dmcp-action dmcp-confirm" onClick={doWrite} disabled={busy}>{t('confirmWrite')}</button>
-              ) : (
-                <button type="button" className="dmcp-action" onClick={() => { setArmed(true) }} disabled={busy}>{t('writeToProfile')}</button>
-              )
-            ) : null}
+            <button type="button" className="dmcp-action" onClick={() => { setPreview(null) }}>{t('hideFragment')}</button>
           </div>
-          {armed ? <p className="dmcp-notice">{t('writeRequiresConfirm')}</p> : null}
-          {!writeEnabled ? <p className="dmcp-error-text">{t('writeDisabled')}</p> : null}
-          {written !== null ? (
-            <p className="dmcp-notice">{t(prevWrittenLabel(written.approvalPath))}</p>
-          ) : null}
         </div>
       ) : null}
     </div>
   )
-}
-
-/** Localized approval-channel label for one write result. */
-function prevWrittenLabel(path: PatchWriteResult['approvalPath']): 'approvalHarness' | 'approvalInteractive' {
-  return path === 'harness-approval' ? 'approvalHarness' : 'approvalInteractive'
 }
 
 /** Build the initial row list from existing keys (values left blank = keep). */

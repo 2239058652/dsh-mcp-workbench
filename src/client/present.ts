@@ -29,6 +29,8 @@ export interface PresentedServerRow {
   readonly ageSeconds: number | null
   /** Whether the attempt/maxAttempts pair is displayable (either is known). */
   readonly hasAttemptBudget: boolean
+  /** Whether any `mcp__<server>__*` tool is registered (a post-handshake fact). */
+  readonly hasTools: boolean
 }
 
 /** Render-ready probe row. */
@@ -49,6 +51,16 @@ export interface PanelSummary {
   readonly connected: number
   /** Servers whose connection badge reads `failed` or `exhausted`. */
   readonly errored: number
+  /**
+   * Servers with at least one registered `mcp__<server>__*` tool. The client
+   * syncs tools only after a successful handshake, so this is the one
+   * connection-shaped fact available without the upstream status seam.
+   */
+  readonly withTools: number
+  /** Servers with no registered tools (not connected, or tool sync failed). */
+  readonly withoutTools: number
+  /** Registered tools summed across the rows. */
+  readonly toolTotal: number
 }
 
 /** The complete render-ready tab model. */
@@ -128,6 +140,7 @@ export function presentMcpPanel(snapshot: McpPanelSnapshot, now = Date.now()): P
       reconnects: view.reconnectCount < 0 ? null : view.reconnectCount,
       ageSeconds: view.observedAt === null ? null : Math.max(0, Math.floor((now - view.observedAt) / 1000)),
       hasAttemptBudget: view.attempt >= 0 || view.maxAttempts > 0,
+      hasTools: view.tools.length > 0,
     }
   })
   const probes = snapshot.probes.map((view): PresentedProbeRow => {
@@ -158,11 +171,15 @@ export function presentMcpPanel(snapshot: McpPanelSnapshot, now = Date.now()): P
 export function summarizePanel(servers: readonly PresentedServerRow[]): PanelSummary {
   let connected = 0
   let errored = 0
+  let withTools = 0
+  let toolTotal = 0
   for (const row of servers) {
     if (row.badge === 'connected') connected += 1
     else if (row.badge === 'failed' || row.badge === 'exhausted') errored += 1
+    if (row.hasTools) withTools += 1
+    toolTotal += row.view.toolCount
   }
-  return { total: servers.length, connected, errored }
+  return { total: servers.length, connected, errored, withTools, withoutTools: servers.length - withTools, toolTotal }
 }
 
 /**
