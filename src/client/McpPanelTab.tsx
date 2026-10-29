@@ -142,16 +142,26 @@ function formatProbeTime(view: McpProbeView): string {
   return view.finishedAt === null ? start : `${start}–${format(view.finishedAt)}`
 }
 
-/** Servers whose newest settled probe in one snapshot says they are not answering. */
-function unreachableServers(snapshot: McpPanelSnapshot): readonly string[] {
+/**
+ * Rows a refresh should restart: the ones the probe found dead, plus the ones
+ * it found reachable with nothing registered — the port answers but the bridge
+ * never synced tools, and only a restart makes it handshake again.
+ */
+function restartTargets(snapshot: McpPanelSnapshot): readonly string[] {
   const settled = new Map<string, McpProbeView['status']>()
   for (const probeView of snapshot.probes) {
     if (probeView.status === 'running' || settled.has(probeView.serverName)) continue
     settled.set(probeView.serverName, probeView.status)
   }
-  return [...settled.entries()]
-    .filter(([, probeStatus]) => probeStatus !== 'completed')
-    .map(([serverName]) => serverName)
+  const targets = new Set<string>()
+  for (const [serverName, probeStatus] of settled) {
+    if (probeStatus !== 'completed') targets.add(serverName)
+  }
+  for (const view of snapshot.servers) {
+    if (!view.enabled || view.entryId === '' || view.tools.length > 0) continue
+    if (settled.get(view.serverName) === 'completed') targets.add(view.serverName)
+  }
+  return [...targets]
 }
 
 /** Localized text for one diagnostic code (fallback: the wire's English text). */
@@ -363,7 +373,7 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
           setProbeError(messageOf(failure))
         }
         if (snapshot !== null) setState({ status: 'ready', snapshot })
-        const dead = snapshot === null ? [] : unreachableServers(snapshot)
+        const dead = snapshot === null ? [] : restartTargets(snapshot)
         if (dead.length === 0) {
           setRefreshPhase('idle')
           reload()
@@ -379,6 +389,8 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
         }
         setRefreshPhase('idle')
         reload()
+        // A restarted row re-registers its tools only after the new handshake.
+        setTimeout(() => { reload() }, 1500)
       })
   }
 
