@@ -69,7 +69,7 @@ dsh plugin --profile <name> add dsh-mcp-workbench
 - **左侧栏 → MCP 页** —— 服务器列表与弹窗（详情、工具试用、资源浏览、诊断）、server CRUD、刷新与重连、探测。
 - **Server CRUD** —— 增删改表单 → 添加用 `insert`，编辑/删除用 id 定向覆盖（`- id:` + `name:` + `disabled:`/`config:`）→ 剪贴板复制或审批写入，自动备份，并在报成功前对照 loader 复验。
 - **Resources 浏览** —— 经官方 `list_mcp_resources` / `list_mcp_resource_templates` / `read_mcp_resource` 工具只读列出资源、模板与 URI 读取（由上游 `@deepseek-ai/dsh-mcp-resources` 服务桥接）；结果只显示在本页、绝不进入模型上下文。
-- **工具试用台** —— 选 server → 选 `mcp__*` 工具 → JSON 填参 → 规范 JSON 结果 + render 内容；按 `trialMaxResultChars` 截断；仅面板可见、永不进入模型上下文。
+- **工具试用** —— 在服务器弹窗里对任意 `mcp__*` 工具就地填参、调用、看结果；按 `trialMaxResultChars` 截断；仅面板可见、永不进入模型上下文。
 
 ## Architecture: official client = bridge, this plugin = console
 
@@ -92,7 +92,7 @@ dsh plugin --profile <name> add dsh-mcp-workbench
    │ mcp-client        │        │                           │    │
    │ • 传输连接        │        │ • /mcpw 命令               │    │
    │ • 工具同步        │        │ • 左侧栏 → MCP 页：       │    │
-   │ • mcp__* 工具     │◄──────►│   CRUD、工具试用台        │    │
+   │ • mcp__* 工具     │◄──────►│   CRUD、工具试用          │    │
    │ • mcp/status seam │ 状态   │ • 健康诊断                │    │
    └───────────────────┘        │ • 探测、能力一览          │    │
                                 └───────────────────────────┘    │
@@ -108,7 +108,7 @@ dsh plugin --profile <name> add dsh-mcp-workbench
 | 修改服务器 | 改 YAML，重启/热重载 | 表单预填当前行；未改动的密钥在 host 侧保留原值 |
 | 删除服务器 | 删掉该行 | 追加 `- id:` + `disabled: true` 覆盖操作（patch 词汇表没有 remove）——可随时重新启用 |
 | 查看状态 | 翻日志 | 徽章 + 重连次数 + 最近错误，来自 `mcp/status` seam 实时数据 |
-| 试用工具 | 让模型调用 | 试用台 → 官方 `ctx.tools.execute()` 管线（权限与审批全程生效） |
+| 试用工具 | 让模型调用 | 弹窗内试用 → 官方 `ctx.tools.execute()` 管线（权限与审批全程生效） |
 | 排查故障 | grep 日志 | `/mcpw <server> health` 派生自愈建议 |
 | 误操作 | 手动回滚 | 每次写入只追加、留时间戳备份 |
 
