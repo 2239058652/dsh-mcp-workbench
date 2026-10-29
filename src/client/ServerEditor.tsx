@@ -83,7 +83,7 @@ export function ServerEditor({ t, view, entryId, writeEnabled, actions, onClose,
             ...isEdit ? { keepEnv: env.keep } : {},
           }
         : {
-            url: url.trim(),
+            url: normalizeUrl(url),
             headers: headers.entries,
             ...isEdit ? { keepHeaders: headers.keep } : {},
           },
@@ -97,7 +97,7 @@ export function ServerEditor({ t, view, entryId, writeEnabled, actions, onClose,
 
   // The one field that decides whether the form is runnable at all.
   const complete = serverName.trim() !== ''
-    && (transport === 'stdio' ? command.trim() !== '' : url.trim() !== '')
+    && (transport === 'stdio' ? command.trim() !== '' : isAbsoluteHttpUrl(url))
 
   const reset = (): void => {
     setError(null)
@@ -182,7 +182,13 @@ export function ServerEditor({ t, view, entryId, writeEnabled, actions, onClose,
           <>
             <label className="dmcp-field">
               <span>{t('fieldUrl')}</span>
-              <input type="text" value={url} onChange={(event) => { setUrl(event.currentTarget.value) }} />
+              <input
+                type="text"
+                value={url}
+                onChange={(event) => { setUrl(event.currentTarget.value) }}
+                onBlur={() => { setUrl(current => normalizeUrl(current)) }}
+              />
+              {url.trim() !== '' && !isAbsoluteHttpUrl(url) ? <p className="dmcp-error-text">{t('fieldUrlInvalid')}</p> : null}
             </label>
             <MapEditor label={t('fieldHeaders')} rows={headerRows} setRows={setHeaderRows} t={t} />
           </>
@@ -299,4 +305,25 @@ function MapEditor({ label, rows, setRows, t }: {
 /** Message text of an arbitrary thrown value. */
 function messageOf(failure: unknown): string {
   return failure instanceof Error ? failure.message : String(failure)
+}
+
+/** Whether the value is an absolute http(s) URL (the host's own requirement). */
+function isAbsoluteHttpUrl(raw: string): boolean {
+  try {
+    const parsed = new URL(raw.trim())
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Trim one URL field and drop words pasted in front of the scheme, so
+ * "name https://host/path" becomes the URL the host expects.
+ */
+function normalizeUrl(raw: string): string {
+  const text = raw.trim()
+  if (text === '' || isAbsoluteHttpUrl(text)) return text
+  const match = /https?:\/\/\S+$/u.exec(text)
+  return match === null ? text : match[0]
 }
