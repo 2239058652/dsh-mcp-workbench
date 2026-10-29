@@ -2,7 +2,7 @@
 
 # dsh-mcp-workbench
 
-**官方 DeepSeek Harness MCP client 的 MCP 管理控制台 —— 在设置页可视化增删改 MCP 服务器、试用工具调用，配以诚实的连接状态、健康诊断与安全可逆的 profile 写入。**
+**官方 DeepSeek Harness MCP client 的 MCP 管理控制台 —— 在左侧栏的 MCP 页面里增删改 MCP 服务器、试用工具调用，配以诚实的连接状态、健康诊断与安全可逆的 profile 写入。**
 
 *官方 client = 桥接，本插件 = 控制台：经 `mcp/status` seam 读取状态，只写入只追加、走审批的 profile patch。*
 
@@ -38,7 +38,7 @@ dsh plugin --profile <name> add dsh-mcp-workbench
 
 ## What is dsh-mcp-workbench?
 
-官方 DeepSeek Harness MCP client 的 MCP 管理控制台 —— 在设置页可视化增删改 MCP 服务器、试用工具调用，配以诚实的连接状态、健康诊断与安全可逆的 profile 写入。
+官方 DeepSeek Harness MCP client 的 MCP 管理控制台 —— 在左侧栏的 MCP 页面里增删改 MCP 服务器、试用工具调用，配以诚实的连接状态、健康诊断与安全可逆的 profile 写入。
 
 官方 client = 桥接，本插件 = 控制台：经 `mcp/status` seam 读取状态，只写入只追加、走审批的 profile patch。
 
@@ -66,7 +66,7 @@ dsh plugin --profile <name> add dsh-mcp-workbench
 - **`/mcpw <server> tools`** —— 模型可见的 `mcp__*` 工具名与描述。
 - **`/mcpw <server> health`** —— 派生自愈建议（ENOENT → 依赖缺失、ECONNREFUSED、超时、401/403/404、DNS、限流、重连耗尽…）；退出码 / stderr 尾部如实标注*待官方支持*。
 - **`/mcpw <server> call <tool> [json]`** —— 经**官方工具管线**（`ctx.tools.execute()`）试用调用；pre-execute 权限策略、审批、guard、post-execute 全部生效。
-- **设置 → 插件 → MCP 页** —— 状态卡片（徽章、诊断、探测），加 server CRUD 与工具试用台。
+- **左侧栏 → MCP 页** —— 服务器列表与弹窗（详情、工具试用、资源浏览、诊断）、server CRUD、刷新与重连、探测。
 - **Server CRUD** —— 增删改表单 → 添加用 `insert`，编辑/删除用 id 定向覆盖（`- id:` + `name:` + `disabled:`/`config:`）→ 剪贴板复制或审批写入，自动备份，并在报成功前对照 loader 复验。
 - **Resources 浏览** —— 经官方 `list_mcp_resources` / `list_mcp_resource_templates` / `read_mcp_resource` 工具只读列出资源、模板与 URI 读取（由上游 `@deepseek-ai/dsh-mcp-resources` 服务桥接）；结果只显示在本页、绝不进入模型上下文。
 - **工具试用台** —— 选 server → 选 `mcp__*` 工具 → JSON 填参 → 规范 JSON 结果 + render 内容；按 `trialMaxResultChars` 截断；仅面板可见、永不进入模型上下文。
@@ -91,7 +91,7 @@ dsh plugin --profile <name> add dsh-mcp-workbench
    │ @deepseek-ai/dsh- │        │ dsh-mcp-workbench（控制台）    │    │
    │ mcp-client        │        │                           │    │
    │ • 传输连接        │        │ • /mcpw 命令               │    │
-   │ • 工具同步        │        │ • 设置 → 插件 → MCP 页：  │    │
+   │ • 工具同步        │        │ • 左侧栏 → MCP 页：       │    │
    │ • mcp__* 工具     │◄──────►│   CRUD、工具试用台        │    │
    │ • mcp/status seam │ 状态   │ • 健康诊断                │    │
    └───────────────────┘        │ • 探测、能力一览          │    │
@@ -131,7 +131,7 @@ dsh plugin --profile web add dsh-mcp-workbench
 dsh --profile web --dump-config | grep -A3 'id: mcp-panel'
 ```
 
-随后打开 **设置 → 插件 → MCP**，或运行：
+随后打开**左侧栏 → MCP**，或运行：
 
 ```text
 /mcpw
@@ -195,7 +195,7 @@ Unknown MCP server "nope" (configured: github)
 | `outputLanguage` | `en` | `/mcpw` 输出语言：`en \| zh \| es \| pt \| hi` |
 | `passiveProbeEnabled` | `false` | 周期性探测 streamable-http 服务器 |
 | `passiveProbeIntervalMs` | `60000` | 被动探测间隔（ms） |
-| `trialEnabled` | `true` | 工具试用台（设置页 + `/mcpw call`） |
+| `trialEnabled` | `true` | 工具试用（MCP 页面 + `/mcpw call`） |
 | `trialTimeoutMs` | `120000` | 每次试用调用的面板侧截止时间（ms） |
 | `trialMaxResultChars` | `60000` | 试用结果载荷上限（字符） |
 | `writeEnabled` | `true` | 总开关：`false` 拒绝一切 profile 写入（仍可复制片段） |
@@ -213,8 +213,8 @@ Unknown MCP server "nope" (configured: github)
 | `/mcpw <server> health` | command | 由脱敏错误文本派生的自愈建议 |
 | `/mcpw <server> call <tool> [json]` | command | 经官方工具管线试用调用 |
 | `mcp_probe` | tool | 可选 Streamable HTTP 连通性探测（后台任务） |
-| 设置 → 插件 → MCP 页 | UI 槽位 | 状态卡片、server CRUD 与工具试用台 |
-| `mcpPanel` Typert Remote | service | 只读快照通道（Host → client） |
+| 左侧栏 → MCP 页 | UI 槽位（`main` 面板 + 侧栏条目） | 服务器列表与弹窗：CRUD、工具试用、资源浏览、探测、重连 |
+| `mcpWorkbench` Typert Remote | service | 只读快照通道（Host → client） |
 
 ## Resources & Prompts
 
