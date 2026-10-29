@@ -16,7 +16,7 @@ import { resolveConfig } from '../src/config.ts'
 const HTTP_CONFIG = {
   serverName: 'web',
   transport: 'streamable-http',
-  url: 'http://localhost:3000/mcp',
+  url: 'http://localhost:3000/mcpw',
   headers: { Authorization: 'Bearer secret-header' },
 }
 
@@ -73,7 +73,7 @@ describe('McpPanelService.probe', () => {
     // A nested row without an explicit serverName falls back to
     // `entry:<options.id>` in the snapshot; the probe lookup must use the
     // same namespace or the panel's own probe action cannot find the row.
-    const nestedConfig = { transport: 'streamable-http', url: 'http://localhost:3000/mcp' }
+    const nestedConfig = { transport: 'streamable-http', url: 'http://localhost:3000/mcpw' }
     const jobs = fakeJobs()
     const harness = await mountHarness([nestedMcpRow('include', 'mcp-web', nestedConfig)], {}, jobs as never)
     expect(harness.service.status().servers[0]?.serverName).toBe('entry:mcp-web')

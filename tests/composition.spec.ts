@@ -66,7 +66,7 @@ afterAll(() => {
 })
 
 describe('Loader composition', () => {
-  it('mounts the built plugin, applies defaults, and serves the /mcp command', () => {
+  it('mounts the built plugin, applies defaults, and serves the /mcpw command', () => {
     const configPath = join(temporaryRoot, 'valid.yml')
     writeFileSync(configPath, configFor(builtUrl))
     const evidence = runRunner(configPath)
@@ -75,8 +75,8 @@ describe('Loader composition', () => {
     const marker = evidence.stdout.match(/DSH_LOADER_RESULT (.+)$/mu)
     const summary = JSON.parse(marker![1]!)
     expect(summary.service).toBe('mcpWorkbench')
-    expect(summary.command).toBe('mcp')
-    expect(summary.commands).toContain('mcp')
+    expect(summary.command).toBe('mcpw')
+    expect(summary.commands).toContain('mcpw')
   })
 
   it('fails loud through the Loader for a Schemastery type error', () => {

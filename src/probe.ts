@@ -290,7 +290,7 @@ export function mcpProbeTool(service: McpPanelService, jobs: JobRegistry, timeou
       server: {
         type: 'string',
         required: true,
-        description: 'serverName of a configured MCP server (see /mcp for the list); streamable-http and stdio transports are both supported.',
+        description: 'serverName of a configured MCP server (see /mcpw for the list); streamable-http and stdio transports are both supported.',
       },
     },
     output: {
@@ -304,14 +304,14 @@ export function mcpProbeTool(service: McpPanelService, jobs: JobRegistry, timeou
       },
       render: (_args, value) => [{
         type: 'text',
-        text: `Probe started (background job ${value.jobId}). Read the result in the MCP panel: Settings → Plugins → MCP.`,
+        text: `Probe started (background job ${value.jobId}). Read the result in the MCP panel: left sidebar → MCP.`,
       }],
     },
     async execute(args) {
       const target = probeTarget(service, args.server)
       if (target === undefined) {
         throw new Error(
-          `mcp_probe: "${args.server}" is not a configured MCP server (see /mcp).`,
+          `mcp_probe: "${args.server}" is not a configured MCP server (see /mcpw).`,
         )
       }
       const jobId = jobs.start({
@@ -322,7 +322,7 @@ export function mcpProbeTool(service: McpPanelService, jobs: JobRegistry, timeou
       })
       return {
         jobId,
-        note: 'Probe results are panel-only: Settings → Plugins → MCP.',
+        note: 'Probe results are panel-only: left sidebar → MCP.',
       }
     },
   })

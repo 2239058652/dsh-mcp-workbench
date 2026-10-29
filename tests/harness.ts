@@ -1,7 +1,7 @@
 /**
  * Shared test harness: real Cordis Context, real Session/ToolRuntime/
  * CommandRuntime services, a fake Loader face, and a minimal fake Agent.
- * The `/mcp` command is exercised through the REAL commands service, so the
+ * The `/mcpw` command is exercised through the REAL commands service, so the
  * command/run + command/done lifecycle events land in a real session log.
  *
  * @module dsh-mcp-workbench/test/harness

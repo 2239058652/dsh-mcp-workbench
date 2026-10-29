@@ -1,9 +1,9 @@
-// Headless /mcp verification over the REAL web profile composition.
+// Headless /mcpw verification over the REAL web profile composition.
 // Run from the deepseek-harness checkout:
 //   node --import tsx/esm Project/Plugins/dsh-mcp-panel/scripts/verify-headless.mjs
 // Boots the profile's full plugin tree (bundles + user patch layers) in
 // process, binds the webserver to an ephemeral port (--port 0), executes
-// /mcp against a fake agent through the real commands service, and prints
+// /mcpw against a fake agent through the real commands service, and prints
 // the exact model-readable output plus the gateway-registered descriptor.
 //
 // Isolation: by default DSH_HOME is pinned to a throwaway directory under
@@ -103,13 +103,13 @@ try {
   })
 
   // Gateway registration check: the host typert manifest must be live.
-  const descriptor = ctx.typert.local.get('mcpPanel/status')
-  console.log(`[gateway] mcpPanel/status typert descriptor: ${descriptor === undefined ? 'MISSING' : 'registered'}`)
+  const descriptor = ctx.typert.local.get('mcpWorkbench/status')
+  console.log(`[gateway] mcpWorkbench/status typert descriptor: ${descriptor === undefined ? 'MISSING' : 'registered'}`)
 
-  // The mcpPanel service itself.
-  const service = ctx.get('mcpPanel')
+  // The mcpWorkbench service itself.
+  const service = ctx.get('mcpWorkbench')
   const snapshot = service.status()
-  console.log(`[service] mcpPanel.status(): ${snapshot.servers.length} server(s), observed=${snapshot.observed}, patchFile=${snapshot.patchFile}`)
+  console.log(`[service] mcpWorkbench.status(): ${snapshot.servers.length} server(s), observed=${snapshot.observed}, patchFile=${snapshot.patchFile}`)
 
   // A fake agent over a real session, exercised through the REAL commands service.
   const session = ctx.sessions.create(SessionId('verify-headless'))
@@ -125,7 +125,7 @@ try {
     return execution
   }
 
-  for (const line of ['/mcp', '/mcp everything tools', '/mcp everything disable']) {
+  for (const line of ['/mcpw', '/mcpw everything tools', '/mcpw everything disable']) {
     const execution = await run(line)
     console.log(`\n===== ${line} =====`)
     console.log(`kind: ${execution?.result.kind}`)

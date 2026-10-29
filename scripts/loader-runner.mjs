@@ -3,7 +3,7 @@
 // boots a real Context, mounts the vendored Loader with the Include builtin,
 // reads the given cordis.yml (service rows + plugin row + config), then
 // asserts the plugin's contributions through the authoritative registries and
-// executes one real behavior (the /mcp command) through the real commands
+// executes one real behavior (the /mcpw command) through the real commands
 // service. Config is applied by the Loader, so a successful mount proves the
 // built entry is loadable under plain Node (A1) and that inject resolution +
 // config application both worked.
@@ -72,9 +72,9 @@ try {
   rethrowFirstFailedRow()
 
   // Authoritative registries carry the plugin's contributions.
-  const service = ctx.get('mcpPanel')
+  const service = ctx.get('mcpWorkbench')
   if (service === undefined) {
-    throw new Error('Loader composition: mcpPanel service is missing from the context')
+    throw new Error('Loader composition: mcpWorkbench service is missing from the context')
   }
   const session = ctx.sessions.create(SessionId('dsh-mcp-panel-loader-runner'))
   const agent = /** @type {any} */ ({
@@ -92,22 +92,22 @@ try {
     steer: () => undefined,
     inject: () => undefined,
   })
-  if (ctx.commands.list(agent).find(entry => entry.name === 'mcp') === undefined) {
-    throw new Error('Loader composition: /mcp command is missing from the commands registry')
+  if (ctx.commands.list(agent).find(entry => entry.name === 'mcpw') === undefined) {
+    throw new Error('Loader composition: /mcpw command is missing from the commands registry')
   }
 
-  // Real behavior: /mcp through the real commands service on an empty
+  // Real behavior: /mcpw through the real commands service on an empty
   // composition reports the empty-state line (English default).
   // rc8 execute(agent, line, images, signal): plain invocations carry no images.
-  const execution = await ctx.commands.execute(agent, '/mcp', [], new AbortController().signal)
+  const execution = await ctx.commands.execute(agent, '/mcpw', [], new AbortController().signal)
   const text = execution?.result?.text ?? ''
   if (!text.includes('No MCP servers configured')) {
-    throw new Error(`Loader composition: /mcp returned ${JSON.stringify(execution?.result)}`)
+    throw new Error(`Loader composition: /mcpw returned ${JSON.stringify(execution?.result)}`)
   }
 
   const summary = {
-    service: 'mcpPanel',
-    command: 'mcp',
+    service: 'mcpWorkbench',
+    command: 'mcpw',
     commands: ctx.commands.list(agent).map(entry => entry.name),
     tools: ctx.tools.schemas().map(schema => schema.name),
   }
@@ -128,7 +128,7 @@ try {
  * `_initTask || fiber.inertia` and returns as soon as there is no pending task
  * — so a row whose `apply` threw no longer makes `await()` reject, and a
  * negative composition regression silently reports the downstream symptom
- * ("mcpPanel service is missing") instead of the real reason. Walking the
+ * ("mcpWorkbench service is missing") instead of the real reason. Walking the
  * entries restores that reason without depending on the resurrected API.
  *
  * `DSH_LOADER_RUNNER_NO_RETHROW=1` disables it for re-measurement only.

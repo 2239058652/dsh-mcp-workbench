@@ -11,7 +11,7 @@
  *   with approval gate + automatic backups) and `callTool` (a tool trial
  *   through the OFFICIAL `ctx.tools.execute` pipeline, so permission policy
  *   and approval stay in force);
- * - the `/mcp` command where a command registry exists (status, tools,
+ * - the `/mcpw` command where a command registry exists (status, tools,
  *   health diagnostics, patch suggestions, and pipeline trial calls);
  * - the optional `mcp_probe` background-job tool where a job registry exists;
  * - the browser half: an "MCP" tab in Settings → Plugins with server CRUD,
@@ -77,7 +77,7 @@ export type * from './wire.ts'
 
 /**
  * Mount the console: the snapshot/action service, the upstream status seam
- * consumer, the `/mcp` command (when commands exist), and the probe tool
+ * consumer, the `/mcpw` command (when commands exist), and the probe tool
  * (when enabled and a job registry exists).
  *
  * @param ctx - context carrying tools + loader.
@@ -86,7 +86,7 @@ export type * from './wire.ts'
 export async function apply(ctx: Context, config: Config): Promise<void> {
   const resolved = resolveConfig(config)
 
-  // Service Provider — mounts McpPanelService and registers the /mcp command and the probe tool through their registries.
+  // Service Provider — mounts McpPanelService and registers the /mcpw command and the probe tool through their registries.
   // The service has injects, so its fiber activates asynchronously — await it
   // before reading the instance the command and probe closures capture.
   const catalog = mergeCatalog(DEFAULT_CATALOG, resolved.catalogEntries)
@@ -121,9 +121,9 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
     for (const status of query.list()) service.observe(status)
   }
 
-  // The /mcp command: only where a human-command registry is composed.
+  // The /mcpw command: only where a human-command registry is composed.
   ctx.inject(['commands'], (scope) => {
-    scope.effect(() => scope.commands.register(mcpCommand(service, resolved.outputLanguage)), 'dsh-mcp-workbench: /mcp command')
+    scope.effect(() => scope.commands.register(mcpCommand(service, resolved.outputLanguage)), 'dsh-mcp-workbench: /mcpw command')
   })
 
   // The jobs controller serves the panel probe action AND the optional tool.

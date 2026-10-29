@@ -24,7 +24,7 @@ export function installPanelStyles(): () => void {
   let element = document.querySelector<HTMLStyleElement>('style[data-dsh-mcp-workbench]')
   if (element === null) {
     element = document.createElement('style')
-    element.dataset.dshMcpPanel = ''
+    element.dataset.dshMcpWorkbench = ''
     element.textContent = PANEL_CSS
     document.head.append(element)
   }

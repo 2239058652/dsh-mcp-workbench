@@ -21,7 +21,7 @@ import { makeAgent, mcpRow } from './harness.ts'
 const WEB_CONFIG = {
   serverName: 'web',
   transport: 'streamable-http',
-  url: 'http://localhost:3000/mcp',
+  url: 'http://localhost:3000/mcpw',
   headers: {},
 }
 
@@ -79,17 +79,17 @@ describe('export contract', () => {
 // ---------------------------------------------------------------------------
 
 describe('fiber disposal', () => {
-  it('removes the service, the /mcp command, and the mcp_probe tool on dispose', async () => {
+  it('removes the service, the /mcpw command, and the mcp_probe tool on dispose', async () => {
     const harness = await mount({ probeEnabled: true }, fakeJobs())
     try {
       expect(harness.ctx.get('mcpWorkbench')).toBeDefined()
-      expect(harness.ctx.commands.list(harness.agent).find(entry => entry.name === 'mcp')).toBeDefined()
+      expect(harness.ctx.commands.list(harness.agent).find(entry => entry.name === 'mcpw')).toBeDefined()
       expect(harness.ctx.tools.get('mcp_probe')).toBeDefined()
 
       await harness.pluginFiber.dispose()
 
       expect(harness.ctx.get('mcpWorkbench')).toBeUndefined()
-      expect(harness.ctx.commands.list(harness.agent).find(entry => entry.name === 'mcp')).toBeUndefined()
+      expect(harness.ctx.commands.list(harness.agent).find(entry => entry.name === 'mcpw')).toBeUndefined()
       expect(harness.ctx.tools.get('mcp_probe')).toBeUndefined()
     } finally {
       await harness.ctx.fiber.dispose()
@@ -116,7 +116,7 @@ describe('mcp_probe three interfaces', () => {
         properties: {
           server: {
             type: 'string',
-            description: 'serverName of a configured MCP server (see /mcp for the list); streamable-http and stdio transports are both supported.',
+            description: 'serverName of a configured MCP server (see /mcpw for the list); streamable-http and stdio transports are both supported.',
           },
         },
         required: ['server'],
@@ -126,13 +126,13 @@ describe('mcp_probe three interfaces', () => {
       const value = await definition.execute({ server: 'web' }, { signal: new AbortController().signal } as never)
       expect(value).toEqual({
         jobId: 'mcp-probe-1',
-        note: 'Probe results are panel-only: Settings → Plugins → MCP.',
+        note: 'Probe results are panel-only: left sidebar → MCP.',
       })
 
       const content = definition.output.render({ server: 'web' } as never, value as never)
       expect(content).toEqual([{
         type: 'text',
-        text: 'Probe started (background job mcp-probe-1). Read the result in the MCP panel: Settings → Plugins → MCP.',
+        text: 'Probe started (background job mcp-probe-1). Read the result in the MCP panel: left sidebar → MCP.',
       }])
     } finally {
       await harness.ctx.fiber.dispose()

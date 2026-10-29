@@ -364,7 +364,7 @@ private readonly trialCaller = createTrialCaller()
     })
     return {
       jobId,
-      note: 'Probe results are panel-only: Settings → Plugins → MCP.',
+      note: 'Probe results are panel-only: left sidebar → MCP.',
     }
   }
 

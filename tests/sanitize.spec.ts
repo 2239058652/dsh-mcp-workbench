@@ -11,11 +11,11 @@ import { sanitizeError, sanitizeText, sanitizeUrl } from '../src/sanitize.ts'
 
 describe('sanitizeUrl', () => {
   it('redacts credential query values and keeps benign pairs', () => {
-    expect(sanitizeUrl('https://example.com/mcp?token=abc&x=1')).toBe('https://example.com/mcp?token=***&x=1')
+    expect(sanitizeUrl('https://example.com/mcpw?token=abc&x=1')).toBe('https://example.com/mcpw?token=***&x=1')
   })
 
   it('redacts the userinfo password but keeps the username', () => {
-    expect(sanitizeUrl('https://user:pass@example.com/mcp')).toBe('https://user:***@example.com/mcp')
+    expect(sanitizeUrl('https://user:pass@example.com/mcpw')).toBe('https://user:***@example.com/mcpw')
   })
 
   it('redacts encoded credential keys (URLSearchParams decodes them first)', () => {
@@ -24,11 +24,11 @@ describe('sanitizeUrl', () => {
 
   it('redacts access_token / apikey / api_key variants case-insensitively', () => {
     expect(sanitizeUrl('HTTPS://EXAMPLE.COM/?ACCESS_TOKEN=ABC&ok=2#frag')).toBe('https://example.com/?ACCESS_TOKEN=***&ok=2#frag')
-    expect(sanitizeUrl('http://[::1]:3000/mcp?apikey=zzz&api_key=yyy')).toBe('http://[::1]:3000/mcp?apikey=***&api_key=***')
+    expect(sanitizeUrl('http://[::1]:3000/mcpw?apikey=zzz&api_key=yyy')).toBe('http://[::1]:3000/mcpw?apikey=***&api_key=***')
   })
 
   it('keeps non-credential query pairs intact', () => {
-    expect(sanitizeUrl('https://example.com/mcp?server=github&page=2')).toBe('https://example.com/mcp?server=github&page=2')
+    expect(sanitizeUrl('https://example.com/mcpw?server=github&page=2')).toBe('https://example.com/mcpw?server=github&page=2')
   })
 
   it('handles unparseable inputs with the pattern fallback without throwing', () => {
@@ -38,7 +38,7 @@ describe('sanitizeUrl', () => {
   })
 
   it('redacts credential pairs in URL fragments', () => {
-    expect(sanitizeUrl('https://example.com/mcp#token=SECRET&ok=1')).toBe('https://example.com/mcp#token=***&ok=1')
+    expect(sanitizeUrl('https://example.com/mcpw#token=SECRET&ok=1')).toBe('https://example.com/mcpw#token=***&ok=1')
     expect(sanitizeUrl('https://example.com/?ACCESS_TOKEN=ABC#access_token=DEF')).toBe('https://example.com/?ACCESS_TOKEN=***#access_token=***')
   })
 
@@ -78,7 +78,7 @@ describe('sanitizeText', () => {
   })
 
   it('redacts fragment credentials embedded in text', () => {
-    const result = sanitizeText('see https://x/mcp#token=SECRET for details')
+    const result = sanitizeText('see https://x/mcpw#token=SECRET for details')
     expect(result).not.toContain('SECRET')
     expect(result).toContain('#token=***')
   })

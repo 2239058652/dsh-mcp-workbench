@@ -1,5 +1,5 @@
 /**
- * `/mcp` output-language tests: the same snapshot renders in English
+ * `/mcpw` output-language tests: the same snapshot renders in English
  * (default) and Simplified Chinese (`outputLanguage: 'zh'`), and the patch
  * suggestion line itself stays machine-identical across languages.
  *
@@ -20,23 +20,23 @@ function text(result: unknown): string {
   return (result as { result?: { text?: string } }).result?.text ?? ''
 }
 
-describe('/mcp output language', () => {
+describe('/mcpw output language', () => {
   it('renders Simplified Chinese when configured', async () => {
     const harness = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG)], { outputLanguage: 'zh' })
-    const list = text(await runCommand(harness, '/mcp'))
+    const list = text(await runCommand(harness, '/mcpw'))
     expect(list).toContain('MCP 服务器（1 个）：')
     expect(list).toContain('已启用')
     expect(list).toContain('状态: unknown (source: derived)')
     expect(list).toContain('最近错误: —')
 
-    const suggestion = text(await runCommand(harness, '/mcp github disable'))
+    const suggestion = text(await runCommand(harness, '/mcpw github disable'))
     expect(suggestion).toContain('要停用 "github"（条目 mcp-github）')
     expect(suggestion).toContain('本命令绝不修改你的配置')
 
-    const usage = text(await runCommand(harness, '/mcp github tools extra'))
-    expect(usage).toContain('用法：/mcp')
+    const usage = text(await runCommand(harness, '/mcpw github tools extra'))
+    expect(usage).toContain('用法：/mcpw')
 
-    const unknown = text(await runCommand(harness, '/mcp nope'))
+    const unknown = text(await runCommand(harness, '/mcpw nope'))
     expect(unknown).toContain('未知 MCP 服务器 "nope"')
     expect(unknown).toContain('已配置：github')
   })
@@ -44,8 +44,8 @@ describe('/mcp output language', () => {
   it('keeps the patch suggestion lines machine-identical across languages', async () => {
     const en = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG)])
     const zh = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG)], { outputLanguage: 'zh' })
-    const enText = text(await runCommand(en, '/mcp github disable'))
-    const zhText = text(await runCommand(zh, '/mcp github disable'))
+    const enText = text(await runCommand(en, '/mcpw github disable'))
+    const zhText = text(await runCommand(zh, '/mcpw github disable'))
     const patchLines = "- id: mcp-github\n  name: '@deepseek-ai/dsh-mcp-client'\n  disabled: true"
     expect(enText).toContain(patchLines)
     expect(zhText).toContain(patchLines)
@@ -54,7 +54,7 @@ describe('/mcp output language', () => {
 
   it('defaults to English output', async () => {
     const harness = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG)])
-    const list = text(await runCommand(harness, '/mcp'))
+    const list = text(await runCommand(harness, '/mcpw'))
     expect(list).toContain('MCP servers (1):')
   })
 
@@ -66,7 +66,7 @@ describe('/mcp output language', () => {
     ]
     for (const { lang, header } of cases) {
       const harness = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG)], { outputLanguage: lang })
-      expect(text(await runCommand(harness, '/mcp'))).toContain(header)
+      expect(text(await runCommand(harness, '/mcpw'))).toContain(header)
     }
   })
 })
