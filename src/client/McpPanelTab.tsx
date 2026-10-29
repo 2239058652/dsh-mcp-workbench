@@ -5,6 +5,7 @@ import type { InjectFace, PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import { presentMcpPanel, probeBadge, summarizePanel, type BadgeTone, type PresentedServerRow } from './present.ts'
 import { ServerEditor } from './ServerEditor.tsx'
 import { Modal } from './Modal.tsx'
+import { PanelBoundary } from './PanelBoundary.tsx'
 import type {
   McpPanelSnapshot,
   McpProbeView,
@@ -433,7 +434,10 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
                   placeholder={t('filterTools')}
                   aria-label={t('filterTools')}
                   onChange={(event) => {
-                    setToolQueries(current => ({ ...current, [serverName]: event.currentTarget.value }))
+                    // Read the value now: React clears currentTarget before the
+                    // state updater runs, so reading it inside the callback throws.
+                    const value = event.currentTarget.value
+                    setToolQueries(current => ({ ...current, [serverName]: value }))
                   }}
                 />
               ) : null}
@@ -524,7 +528,8 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
                   placeholder={t('resourceUri')}
                   aria-label={t('resourceUri')}
                   onChange={(event) => {
-                    setResourceUri(current => ({ ...current, [serverName]: event.currentTarget.value }))
+                    const value = event.currentTarget.value
+                    setResourceUri(current => ({ ...current, [serverName]: value }))
                   }}
                 />
                 <button
@@ -671,6 +676,7 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
 
   return (
     <div className="dmcp-page" data-dsh-mcp-workbench="" aria-busy={state.status === 'loading'}>
+      <PanelBoundary title={t('error')} retryLabel={t('retry')}>
       <header className="dmcp-page-head">
         <h2 className="dmcp-page-title">{t('servers')}</h2>
         <div className="dmcp-head-actions">
@@ -825,6 +831,7 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
           />
         </Modal>
       ) : null}
+      </PanelBoundary>
     </div>
   )
 }
