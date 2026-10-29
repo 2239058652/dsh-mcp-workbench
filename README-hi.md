@@ -1,23 +1,16 @@
 <div align="center">
 
 # dsh-mcp-panel
-- **1024 स्टोर चैनल**: एक बार `npm i -g dsh1024`, फिर `dsh1024 plugin --profile web add dsh-mcp-panel` ([deepseek1024.com](https://deepseek1024.com) इंस्टॉल रैंकिंग में गिना जाता है)।
 
 **DeepSeek Harness के आधिकारिक MCP क्लाइंट के लिए MCP प्रबंधन कंसोल — सेटिंग्स पेज से MCP सर्वर जोड़ें, बदलें, हटाएँ और टूल आज़माएँ; ईमानदार स्थिति, स्वास्थ्य निदान और सुरक्षित, वापस लाने योग्य प्रोफ़ाइल लेखन के साथ।**
 
 *आधिकारिक क्लाइंट = पुल, यह प्लगइन = कंसोल: `mcp/status` seam से स्थिति पढ़ें, केवल जोड़ने वाले, अनुमोदित प्रोफ़ाइल patch लिखें।*
 
+> **यह एक व्यक्तिगत fork है।** [PerryLink/dsh-mcp-panel](https://github.com/PerryLink/dsh-mcp-panel) पर आधारित, स्थानीय बदलावों के साथ। मूल परियोजना का स्वामित्व और रखरखाव PerryLink का है; यह रिपॉज़िटरी उससे संबद्ध नहीं है और आधिकारिक सहायता नहीं देती।
+
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Gitee](https://img.shields.io/badge/Gitee-mirror-c71d23?logo=gitee)](https://gitee.com/perrylink/dsh-mcp-panel)
 [![DSH plugin](https://img.shields.io/badge/dsh--plugin-✅-green)](https://github.com/topics/dsh-plugin)
-[![dsh-doctor](https://raw.githubusercontent.com/PerryLink/dsh-plugin-doctor/main/badges/PerryLink__dsh-mcp-panel.svg)](https://github.com/PerryLink/dsh-plugin-doctor#verified-徽章)
-[![DSH Market](https://raw.githubusercontent.com/2BingLing/dsh-market/master/assets/readme/badge-top-rated.svg)](https://dsh.market/)
 [![Node](https://img.shields.io/badge/node-%5E22.19%20%7C%7C%20%3E%3D24-brightgreen.svg)](#)
-[![CI](https://img.shields.io/github/actions/workflow/status/PerryLink/dsh-mcp-panel/ci.yml?branch=main&label=CI)](https://github.com/PerryLink/dsh-mcp-panel/actions)
-[![Version](https://img.shields.io/github/v/tag/PerryLink/dsh-mcp-panel?label=version)](https://github.com/PerryLink/dsh-mcp-panel/releases)
-[![npm version](https://img.shields.io/npm/v/dsh-mcp-panel)](https://www.npmjs.com/package/dsh-mcp-panel)
-[![npm downloads](https://img.shields.io/npm/dm/dsh-mcp-panel)](https://www.npmjs.com/package/dsh-mcp-panel)
-[![dshfind](https://dshfind.com/api/badge/PerryLink/dsh-mcp-panel?metric=downloads&lang=hi)](https://dshfind.com/hi/plugins/PerryLink/dsh-mcp-panel?ref=badge)
 
 [English](README-en.md) · [简体中文](README.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
@@ -35,7 +28,7 @@ dsh plugin --profile <name> add dsh-mcp-panel
 <!-- star-cta -->
 ## Install & uninstall
 
-- **git चैनल** (नवीनतम `main`): `dsh plugin --profile web add github:PerryLink/dsh-mcp-panel` — `prepare` स्क्रिप्ट केवल production निर्भरताओं से बिल्ड करती है।
+- **git चैनल** (नवीनतम `main`): `dsh plugin --profile web add github:2239058652/dsh-mcp-panel` — `prepare` स्क्रिप्ट केवल production निर्भरताओं से बिल्ड करती है।
 - **npm चैनल** (प्रकाशित संस्करण): `dsh plugin --profile web add dsh-mcp-panel`।
 - **tarball चैनल**: इस repo में `pnpm pack`, फिर `dsh plugin --profile web add ./dsh-mcp-panel-<version>.tgz`।
 - **अनइंस्टॉल**: `cordis.patch.yml` से `mcp-panel` पंक्ति हटाएँ (वेब सतह इसे हॉट-रीलोड करती है), profile के `node_modules` से पैकेज हटाएँ, और `dsh web --dump-config` से पुष्टि करें कि कोई `mcp-panel` पंक्ति शेष नहीं है।
@@ -127,12 +120,12 @@ DeepSeek Harness के आधिकारिक MCP क्लाइंट क�
 ## Quick start
 
 ```sh
-dsh plugin --profile web add github:PerryLink/dsh-mcp-panel
+dsh plugin --profile web add github:2239058652/dsh-mcp-panel
 ```
 
 ```sh
 # 1. bundle को अपने profile में इंस्टॉल करें
-dsh plugin --profile web add github:PerryLink/dsh-mcp-panel
+dsh plugin --profile web add github:2239058652/dsh-mcp-panel
 
 # या npm से (प्रकाशित संस्करण)
 dsh plugin --profile web add dsh-mcp-panel

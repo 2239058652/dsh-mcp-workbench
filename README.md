@@ -1,25 +1,16 @@
 <div align="center">
 
 # dsh-mcp-panel
-- **1024 商店渠道**：先 `npm i -g dsh1024`，再 `dsh1024 plugin --profile web add dsh-mcp-panel`（计入 [deepseek1024.com](https://deepseek1024.com) 安装排行）。
 
 **官方 DeepSeek Harness MCP client 的 MCP 管理控制台 —— 在设置页可视化增删改 MCP 服务器、试用工具调用，配以诚实的连接状态、健康诊断与安全可逆的 profile 写入。**
 
 *官方 client = 桥接，本插件 = 控制台：经 `mcp/status` seam 读取状态，只写入只追加、走审批的 profile patch。*
 
-> **官方仓库。** 本仓库是 dsh-mcp-panel 的唯一官方仓库，由 PerryLink 维护。其他账号下的同名仓库与本项目无关。
+> **这是个人 fork。** 基于 [PerryLink/dsh-mcp-panel](https://github.com/PerryLink/dsh-mcp-panel) 修改，仅供本人使用；上游的作者与维护归 PerryLink，本仓库与其无隶属关系，也不提供官方支持。
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Gitee](https://img.shields.io/badge/Gitee-mirror-c71d23?logo=gitee)](https://gitee.com/perrylink/dsh-mcp-panel)
 [![DSH plugin](https://img.shields.io/badge/dsh--plugin-✅-green)](https://github.com/topics/dsh-plugin)
-[![dsh-doctor](https://raw.githubusercontent.com/PerryLink/dsh-plugin-doctor/main/badges/PerryLink__dsh-mcp-panel.svg)](https://github.com/PerryLink/dsh-plugin-doctor#verified-徽章)
-[![DSH Market](https://raw.githubusercontent.com/2BingLing/dsh-market/master/assets/readme/badge-top-rated.svg)](https://dsh.market/)
 [![Node](https://img.shields.io/badge/node-%5E22.19%20%7C%7C%20%3E%3D24-brightgreen.svg)](#)
-[![CI](https://img.shields.io/github/actions/workflow/status/PerryLink/dsh-mcp-panel/ci.yml?branch=main&label=CI)](https://github.com/PerryLink/dsh-mcp-panel/actions)
-[![Version](https://img.shields.io/github/v/tag/PerryLink/dsh-mcp-panel?label=version)](https://github.com/PerryLink/dsh-mcp-panel/releases)
-[![npm version](https://img.shields.io/npm/v/dsh-mcp-panel)](https://www.npmjs.com/package/dsh-mcp-panel)
-[![npm downloads](https://img.shields.io/npm/dm/dsh-mcp-panel)](https://www.npmjs.com/package/dsh-mcp-panel)
-[![dshfind](https://dshfind.com/api/badge/PerryLink/dsh-mcp-panel?metric=downloads&lang=zh)](https://dshfind.com/zh/plugins/PerryLink/dsh-mcp-panel?ref=badge)
 
 [English](README-en.md) · [简体中文](README.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
@@ -37,7 +28,7 @@ dsh plugin --profile <name> add dsh-mcp-panel
 <!-- star-cta -->
 ## Install & uninstall
 
-- **git 通道**（最新 `main`）：`dsh plugin --profile web add github:PerryLink/dsh-mcp-panel` —— `prepare` 脚本只用生产依赖构建。
+- **git 通道**（最新 `main`）：`dsh plugin --profile web add github:2239058652/dsh-mcp-panel` —— `prepare` 脚本只用生产依赖构建。
 - **npm 通道**（发布版本）：`dsh plugin --profile web add dsh-mcp-panel`。
 - **tarball 通道**：在本仓库 `pnpm pack`，再 `dsh plugin --profile web add ./dsh-mcp-panel-<version>.tgz`。
 - **卸载**：从 `cordis.patch.yml` 移除 `mcp-panel` 行（web 面板热重载），从 profile 的 `node_modules` 删除本包，并用 `dsh web --dump-config` 确认没有残留的 `mcp-panel` 行。
@@ -129,12 +120,12 @@ dsh plugin --profile <name> add dsh-mcp-panel
 ## Quick start
 
 ```sh
-dsh plugin --profile web add github:PerryLink/dsh-mcp-panel
+dsh plugin --profile web add github:2239058652/dsh-mcp-panel
 ```
 
 ```sh
 # 1. 把 bundle 安装进 profile
-dsh plugin --profile web add github:PerryLink/dsh-mcp-panel
+dsh plugin --profile web add github:2239058652/dsh-mcp-panel
 
 # 或从 npm（发布版本）
 dsh plugin --profile web add dsh-mcp-panel
