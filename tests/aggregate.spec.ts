@@ -41,8 +41,8 @@ describe('deriveTarget', () => {
   })
 
   it('derives sanitized streamable-http URLs', () => {
-    expect(deriveTarget({ transport: 'streamable-http', url: 'http://localhost:3000/mcpw?token=SECRET' }))
-      .toEqual({ transport: 'streamable-http', target: 'http://localhost:3000/mcpw?token=***' })
+    expect(deriveTarget({ transport: 'streamable-http', url: 'http://localhost:3000/mcp?token=SECRET' }))
+      .toEqual({ transport: 'streamable-http', target: 'http://localhost:3000/mcp?token=***' })
   })
 
   it('shows !!js expression arguments as markers instead of evaluating them', () => {

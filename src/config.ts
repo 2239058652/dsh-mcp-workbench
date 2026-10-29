@@ -23,7 +23,7 @@ export const DEFAULT_MAX_PROBES = 10
 /** Ceiling on the suggested panel refresh interval (1 hour). */
 export const MAX_REFRESH_INTERVAL_MS = 3_600_000
 
-/** Languages the `/mcpw` command renders in (mirrors the five-language READMEs). */
+/** Languages the `/mcp` command renders in (mirrors the five-language READMEs). */
 export type OutputLanguage = 'en' | 'zh' | 'es' | 'pt' | 'hi'
 
 /**
@@ -64,13 +64,13 @@ export interface Config {
   maxProbes?: number
   /** Suggested panel refresh interval in ms; 0 = on demand only (default 0). */
   refreshIntervalMs?: number
-  /** Output language of the `/mcpw` command (default en). */
+  /** Output language of the `/mcp` command (default en). */
   outputLanguage?: OutputLanguage
   /** Periodically probe streamable-http servers in the background (default false). */
   passiveProbeEnabled?: boolean
   /** Passive probe interval in milliseconds (default 60000). */
   passiveProbeIntervalMs?: number
-  /** Enable the tool trial console (left-sidebar panel + /mcpw call). Default true. */
+  /** Enable the tool trial console (left-sidebar panel + /mcp call). Default true. */
   trialEnabled?: boolean
   /** Panel-side deadline for one trial tool call in ms (default 120000). */
   trialTimeoutMs?: number
@@ -98,7 +98,7 @@ export interface ResolvedConfig {
   maxProbes: number
   /** Suggested panel refresh interval in ms (0 = on demand). */
   refreshIntervalMs: number
-  /** Output language of the `/mcpw` command. */
+  /** Output language of the `/mcp` command. */
   outputLanguage: OutputLanguage
   /** Whether the passive probe loop runs. */
   passiveProbeEnabled: boolean

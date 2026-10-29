@@ -184,7 +184,7 @@ describe('filterServers', () => {
       refreshIntervalMs: 0,
       servers: [
         server({ serverName: 'Everything', target: 'npx mcp-server-everything' }),
-        server({ serverName: 'gitlab', target: 'https://git.example.com/mcpw' }),
+        server({ serverName: 'gitlab', target: 'https://git.example.com/mcp' }),
         server({ serverName: 'git-local', target: 'node server.js' }),
       ],
       probes: [],

@@ -1,5 +1,5 @@
 /**
- * `/mcpw` command tests through the REAL commands and tools services:
+ * `/mcp` command tests through the REAL commands and tools services:
  * registration, the listing row format, tool listings, controlled
  * enable/disable patch suggestions, usage errors, honest unknown status,
  * upstream `mcp/status` consumption, secret exclusion, log
@@ -27,7 +27,7 @@ const GITHUB_CONFIG = {
 const WEB_CONFIG = {
   serverName: 'web',
   transport: 'streamable-http',
-  url: 'http://localhost:3000/mcpw?token=url-secret',
+  url: 'http://localhost:3000/mcp?token=url-secret',
   headers: { Authorization: 'Bearer header-secret' },
 }
 
@@ -45,18 +45,18 @@ function fakeJobs() {
   }
 }
 
-describe('/mcpw command', () => {
+describe('/mcp command', () => {
   it('registers with its usage hint', async () => {
     const harness = await mountHarness()
-    expect(harness.ctx.commands.list(harness.agent).map(command => command.name)).toContain('mcpw')
-    expect(harness.ctx.commands.find(harness.agent, 'mcpw')).toMatchObject({
+    expect(harness.ctx.commands.list(harness.agent).map(command => command.name)).toContain('mcp')
+    expect(harness.ctx.commands.find(harness.agent, 'mcp')).toMatchObject({
       input: { hint: '[server] [tools|call|health|disable|enable|probe]' },
     })
   })
 
   it('reports no servers when none are configured', async () => {
     const harness = await mountHarness()
-    const result = await runCommand(harness, '/mcpw')
+    const result = await runCommand(harness, '/mcp')
     expect(result?.result.kind).toBe('success')
     expect(text(result)).toContain('No MCP servers configured')
   })
@@ -77,26 +77,26 @@ describe('/mcpw command', () => {
       output: { schema: { type: 'null' }, render: () => [] },
       execute: () => Promise.resolve(null),
     })
-    const output = text(await runCommand(harness, '/mcpw'))
+    const output = text(await runCommand(harness, '/mcp'))
     expect(output).toContain('MCP servers (2):')
     expect(output).toContain('- github [mcp-github] stdio npx -y @modelcontextprotocol/server-github | 1 tools | enabled')
     expect(output).toContain('status: unknown (source: derived)')
     expect(output).toContain('reconnects: —')
     expect(output).toContain('last error: —')
-    expect(output).toContain('- web [mcp-web] streamable-http http://localhost:3000/mcpw?token=*** | 1 tools | enabled')
+    expect(output).toContain('- web [mcp-web] streamable-http http://localhost:3000/mcp?token=*** | 1 tools | enabled')
     // Secrets from env, headers, and the URL query never reach the output.
     expect(output).not.toContain('env-secret')
     expect(output).not.toContain('header-secret')
     expect(output).not.toContain('url-secret')
   })
 
-  it('lists one server detail with /mcpw <server>', async () => {
+  it('lists one server detail with /mcp <server>', async () => {
     const harness = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG)])
-    const output = text(await runCommand(harness, '/mcpw github'))
+    const output = text(await runCommand(harness, '/mcp github'))
     expect(output).toContain('- github [mcp-github] stdio npx')
   })
 
-  it('lists tool names with descriptions via /mcpw <server> tools', async () => {
+  it('lists tool names with descriptions via /mcp <server> tools', async () => {
     const harness = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG)])
     harness.ctx.tools.register({
       name: 'mcp__github__create_issue',
@@ -105,20 +105,20 @@ describe('/mcpw command', () => {
       output: { schema: { type: 'null' }, render: () => [] },
       execute: () => Promise.resolve(null),
     })
-    const output = text(await runCommand(harness, '/mcpw github tools'))
+    const output = text(await runCommand(harness, '/mcp github tools'))
     expect(output).toContain('Tools of "github" (1, model-visible public names):')
     expect(output).toContain('- mcp__github__create_issue — Create a new issue in a GitHub repository')
   })
 
   it('reports no tools honestly instead of guessing', async () => {
     const harness = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG)])
-    const output = text(await runCommand(harness, '/mcpw github tools'))
+    const output = text(await runCommand(harness, '/mcp github tools'))
     expect(output).toContain('No tools registered for "github"')
   })
 
   it('suggests the exact patch lines for disable without editing anything', async () => {
     const harness = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG)])
-    const output = text(await runCommand(harness, '/mcpw github disable'))
+    const output = text(await runCommand(harness, '/mcp github disable'))
     expect(output).toContain('- id: mcp-github')
     expect(output).toContain("name: '@deepseek-ai/dsh-mcp-client'")
     expect(output).toContain('disabled: true')
@@ -132,7 +132,7 @@ describe('/mcpw command', () => {
 
   it('suggests the enable patch for a disabled row', async () => {
     const harness = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG, 2, true)])
-    const output = text(await runCommand(harness, '/mcpw github enable'))
+    const output = text(await runCommand(harness, '/mcp github enable'))
     expect(output).toContain('- id: mcp-github')
     expect(output).toContain('disabled: false')
   })
@@ -141,22 +141,22 @@ describe('/mcpw command', () => {
     // entry.id carries the enclosing group prefix (`include:`); patch files
     // match the bare options.id, so the suggestion must use the bare id.
     const harness = await mountHarness([nestedMcpRow('include', 'mcp-github', GITHUB_CONFIG)])
-    const listOutput = text(await runCommand(harness, '/mcpw'))
+    const listOutput = text(await runCommand(harness, '/mcp'))
     expect(listOutput).toContain('- github [mcp-github] stdio')
     expect(listOutput).not.toContain('include:mcp-github')
-    const output = text(await runCommand(harness, '/mcpw github disable'))
+    const output = text(await runCommand(harness, '/mcp github disable'))
     expect(output).toContain('- id: mcp-github')
     expect(output).not.toContain('include:mcp-github')
   })
 
   it('rejects unknown servers and bad usage', async () => {
     const harness = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG)])
-    const unknown = await runCommand(harness, '/mcpw nope tools')
+    const unknown = await runCommand(harness, '/mcp nope tools')
     expect(unknown?.result.kind).toBe('error')
     expect(text(unknown)).toContain('Unknown MCP server "nope"')
-    const usage = await runCommand(harness, '/mcpw github tools extra')
+    const usage = await runCommand(harness, '/mcp github tools extra')
     expect(usage?.result.kind).toBe('error')
-    expect(text(usage)).toContain('Usage: /mcpw')
+    expect(text(usage)).toContain('Usage: /mcp')
   })
 
   it('marks leftover mcp__ namespaces as unconfigured, not disabled', async () => {
@@ -168,7 +168,7 @@ describe('/mcpw command', () => {
       output: { schema: { type: 'null' }, render: () => [] },
       execute: () => Promise.resolve(null),
     })
-    const output = text(await runCommand(harness, '/mcpw'))
+    const output = text(await runCommand(harness, '/mcp'))
     expect(output).toContain('MCP servers (1):')
     expect(output).toContain('unconfigured')
     expect(output).not.toContain('| disabled')
@@ -183,7 +183,7 @@ describe('/mcpw command', () => {
       output: { schema: { type: 'null' }, render: () => [] },
       execute: () => Promise.resolve(null),
     })
-    const result = await runCommand(harness, '/mcpw foreign disable')
+    const result = await runCommand(harness, '/mcp foreign disable')
     expect(result?.result.kind).toBe('error')
     const output = text(result)
     expect(output).toContain('not a configured server')
@@ -201,19 +201,19 @@ describe('/mcpw command', () => {
       error: 'spawn failed GITHUB_TOKEN=secret-token',
       toolCount: 0,
     })
-    const output = text(await runCommand(harness, '/mcpw github'))
+    const output = text(await runCommand(harness, '/mcp github'))
     expect(output).toContain('status: waiting (source: upstream-event)')
     expect(output).toContain('retry in 2000ms')
     expect(output).not.toContain('secret-token')
     harness.ctx.emit('mcp/status', { serverName: 'github', phase: 'connecting', attempt: 3, maxAttempts: 10, toolCount: 0 })
-    const after = text(await runCommand(harness, '/mcpw github'))
+    const after = text(await runCommand(harness, '/mcp github'))
     expect(after).toContain('status: connecting (source: upstream-event)')
     expect(after).toContain('reconnects: 1')
   })
 
   it('is reconstructable from the session log (command/run + command/done)', async () => {
     const harness = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG)])
-    await runCommand(harness, '/mcpw github')
+    await runCommand(harness, '/mcp github')
     const events = harness.session.snapshotEvents().map(event => event.type)
     expect(events).toContain('command/run')
     expect(events).toContain('command/done')
@@ -252,7 +252,7 @@ describe('mcp_probe tool (optional)', () => {
     const result = await definition.execute({ server: 'github' }, { signal: new AbortController().signal } as never) as { jobId: string }
     expect(result.jobId).toBe('mcp-probe-1')
     await expect(definition.execute({ server: 'missing' }, { signal: new AbortController().signal } as never))
-      .rejects.toThrow('not a configured MCP server (see /mcpw)')
+      .rejects.toThrow('not a configured MCP server (see /mcp)')
   })
 
   it('can be disabled by config', async () => {
@@ -261,11 +261,11 @@ describe('mcp_probe tool (optional)', () => {
   })
 })
 
-describe('/mcpw <server> probe command action', () => {
+describe('/mcp <server> probe command action', () => {
   it('starts an unowned panel-only probe and returns its job id', async () => {
     const jobs = fakeJobs()
     const harness = await mountHarness([mcpRow('mcp-web', WEB_CONFIG)], {}, jobs as never)
-    const result = await runCommand(harness, '/mcpw web probe')
+    const result = await runCommand(harness, '/mcp web probe')
     expect(result?.result.kind).toBe('success')
     expect(text(result)).toContain('Probe started for "web" (background job mcp-probe-1)')
     expect(text(result)).toContain('left sidebar → MCP')
@@ -274,20 +274,20 @@ describe('/mcpw <server> probe command action', () => {
 
   it('starts a stdio probe for stdio servers', async () => {
     const harness = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG)], {}, fakeJobs() as never)
-    const result = await runCommand(harness, '/mcpw github probe')
+    const result = await runCommand(harness, '/mcp github probe')
     expect(result?.result.kind).toBe('success')
     expect(text(result)).toContain('Probe started for "github" (background job mcp-probe-1)')
   })
 
   it('reports a missing job registry as an error result', async () => {
     const harness = await mountHarness([mcpRow('mcp-web', WEB_CONFIG)])
-    const result = await runCommand(harness, '/mcpw web probe')
+    const result = await runCommand(harness, '/mcp web probe')
     expect(result?.result.kind).toBe('error')
     expect(text(result)).toContain('ctx.jobs is not composed')
   })
 })
 
-describe('/mcpw health and call console actions', () => {
+describe('/mcp health and call console actions', () => {
   it('renders the health block with derived suggestions and honest pending markers', async () => {
     const harness = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG)])
     harness.ctx.emit('mcp/status', {
@@ -298,7 +298,7 @@ describe('/mcpw health and call console actions', () => {
       error: 'spawn npx ENOENT',
       toolCount: 0,
     })
-    const output = text(await runCommand(harness, '/mcpw github health'))
+    const output = text(await runCommand(harness, '/mcp github health'))
     expect(output).toContain('Health of "github":')
     expect(output).toContain('Suggestions:')
     expect(output).toContain('command-not-found')
@@ -316,7 +316,7 @@ describe('/mcpw health and call console actions', () => {
       output: { schema: { type: 'null' }, render: () => [{ type: 'text', text: 'created' }] },
       execute: () => Promise.resolve(null),
     })
-    const result = await runCommand(harness, '/mcpw github call mcp__github__create_issue {"title":"hi"}')
+    const result = await runCommand(harness, '/mcp github call mcp__github__create_issue {"title":"hi"}')
     expect(result?.result.kind).toBe('success')
     const output = text(result)
     expect(output).toContain('Trial call mcp__github__create_issue through the official tool pipeline')
@@ -327,7 +327,7 @@ describe('/mcpw health and call console actions', () => {
 
   it('reports trial-call errors as error results without touching any config', async () => {
     const harness = await mountHarness([mcpRow('mcp-github', GITHUB_CONFIG)])
-    const unknown = await runCommand(harness, '/mcpw github call mcp__github__nope {}')
+    const unknown = await runCommand(harness, '/mcp github call mcp__github__nope {}')
     expect(unknown?.result.kind).toBe('error')
     expect(text(unknown)).toContain('not registered')
   })

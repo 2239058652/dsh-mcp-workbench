@@ -32,7 +32,7 @@ describe('validateServerConfig', () => {
   })
 
   it('accepts a complete streamable-http config', () => {
-    const result = validateServerConfig({ serverName: 'web', transport: 'streamable-http', url: 'http://localhost/mcpw' })
+    const result = validateServerConfig({ serverName: 'web', transport: 'streamable-http', url: 'http://localhost/mcp' })
     expect(result.ok).toBe(true)
   })
 
@@ -143,7 +143,7 @@ describe('mergeServerConfig', () => {
     command: null,
     args: [],
     cwd: null,
-    url: 'http://localhost:3000/mcpw?token=***',
+    url: 'http://localhost:3000/mcp?token=***',
     envKeys: [],
     headerKeys: ['Authorization'],
     toolCallTimeoutMs: null,
@@ -154,7 +154,7 @@ describe('mergeServerConfig', () => {
   const raw = {
     serverName: 'web',
     transport: 'streamable-http',
-    url: 'http://localhost:3000/mcpw?token=SECRET',
+    url: 'http://localhost:3000/mcp?token=SECRET',
     headers: { Authorization: 'Bearer TOKEN' },
   }
 
@@ -162,10 +162,10 @@ describe('mergeServerConfig', () => {
     const merged = mergeServerConfig(raw, {
       serverName: 'web',
       transport: 'streamable-http',
-      url: 'http://localhost:3000/mcpw?token=***',
+      url: 'http://localhost:3000/mcp?token=***',
       keepHeaders: ['Authorization'],
     }, view)
-    expect(merged['url']).toBe('http://localhost:3000/mcpw?token=SECRET')
+    expect(merged['url']).toBe('http://localhost:3000/mcp?token=SECRET')
     expect(merged['headers']).toEqual({ Authorization: 'Bearer TOKEN' })
   })
 
@@ -173,10 +173,10 @@ describe('mergeServerConfig', () => {
     const merged = mergeServerConfig(raw, {
       serverName: 'web',
       transport: 'streamable-http',
-      url: 'http://other/mcpw',
+      url: 'http://other/mcp',
       headers: { 'X-New': 'v' },
     }, view)
-    expect(merged['url']).toBe('http://other/mcpw')
+    expect(merged['url']).toBe('http://other/mcp')
     expect(merged['headers']).toEqual({ 'X-New': 'v' })
   })
 

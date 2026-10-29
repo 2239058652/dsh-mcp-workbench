@@ -1,9 +1,9 @@
-// Headless /mcpw verification over the REAL web profile composition.
+// Headless /mcp verification over the REAL web profile composition.
 // Run from the deepseek-harness checkout:
 //   node --import tsx/esm Project/Plugins/dsh-mcp-workbench/scripts/verify-headless.mjs
 // Boots the profile's full plugin tree (bundles + user patch layers) in
 // process, binds the webserver to an ephemeral port (--port 0), executes
-// /mcpw against a fake agent through the real commands service, and prints
+// /mcp against a fake agent through the real commands service, and prints
 // the exact model-readable output plus the gateway-registered descriptor.
 //
 // Isolation: by default DSH_HOME is pinned to a throwaway directory under
@@ -125,7 +125,7 @@ try {
     return execution
   }
 
-  for (const line of ['/mcpw', '/mcpw everything tools', '/mcpw everything disable']) {
+  for (const line of ['/mcp', '/mcp everything tools', '/mcp everything disable']) {
     const execution = await run(line)
     console.log(`\n===== ${line} =====`)
     console.log(`kind: ${execution?.result.kind}`)

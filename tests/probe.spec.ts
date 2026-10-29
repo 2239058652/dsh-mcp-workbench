@@ -37,7 +37,7 @@ describe('probeEndpoint', () => {
     vi.stubGlobal('fetch', vi.fn(async () => fakeResponse(200, 'OK', {
       result: { serverInfo: { name: 'test-server', version: '1.2.3' } },
     })))
-    const outcome = await probeEndpoint('https://example.com/mcpw', {}, 1000, NEVER_ABORTED)
+    const outcome = await probeEndpoint('https://example.com/mcp', {}, 1000, NEVER_ABORTED)
     expect(outcome.status).toBe('completed')
     expect(outcome.detail).toContain('HTTP 200')
     expect(outcome.detail).toContain('MCP initialize ok (server test-server 1.2.3)')
@@ -45,21 +45,21 @@ describe('probeEndpoint', () => {
 
   it('degrades to unnamed for a 2xx without a JSON body', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => fakeResponse(200, 'OK')))
-    const outcome = await probeEndpoint('https://example.com/mcpw', {}, 1000, NEVER_ABORTED)
+    const outcome = await probeEndpoint('https://example.com/mcp', {}, 1000, NEVER_ABORTED)
     expect(outcome).toMatchObject({ status: 'completed' })
     expect(outcome.detail).toContain('server unnamed unknown version')
   })
 
   it('reports non-2xx status without a body', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => fakeResponse(404, 'Not Found')))
-    const outcome = await probeEndpoint('https://example.com/mcpw', {}, 1000, NEVER_ABORTED)
+    const outcome = await probeEndpoint('https://example.com/mcp', {}, 1000, NEVER_ABORTED)
     expect(outcome.status).toBe('failed')
     expect(outcome.detail).toMatch(/HTTP 404 Not Found \(\d+ms\)/)
   })
 
   it('sanitizes network failures before display', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('connect failed GITHUB_TOKEN=secret-token') }))
-    const outcome = await probeEndpoint('https://example.com/mcpw', {}, 1000, NEVER_ABORTED)
+    const outcome = await probeEndpoint('https://example.com/mcp', {}, 1000, NEVER_ABORTED)
     expect(outcome.status).toBe('failed')
     expect(outcome.detail).not.toContain('secret-token')
   })
@@ -72,7 +72,7 @@ describe('probeEndpoint', () => {
       })
     }))
     const controller = new AbortController()
-    const pending = probeEndpoint('https://example.com/mcpw', {}, 1500, controller.signal)
+    const pending = probeEndpoint('https://example.com/mcp', {}, 1500, controller.signal)
     controller.abort()
     const outcome = await pending
     expect(outcome.status).toBe('failed')
@@ -84,7 +84,7 @@ describe('probeEndpoint', () => {
     vi.stubGlobal('fetch', vi.fn(async () => fakeResponse(200, 'OK', {
       result: { serverInfo: { name: longName, version: '1.0.0' } },
     })))
-    const outcome = await probeEndpoint('https://example.com/mcpw', {}, 1000, NEVER_ABORTED)
+    const outcome = await probeEndpoint('https://example.com/mcp', {}, 1000, NEVER_ABORTED)
     expect(outcome.status).toBe('completed')
     expect(outcome.detail).not.toContain(longName)
     expect(outcome.detail).toContain(`${'s'.repeat(79)}…`)
@@ -93,7 +93,7 @@ describe('probeEndpoint', () => {
   it('uses configured headers for the request without exposing them', async () => {
     const fetchMock = vi.fn<(input: string, init?: RequestInit) => Promise<Response>>(async () => fakeResponse(200, 'OK', { result: {} }))
     vi.stubGlobal('fetch', fetchMock)
-    const outcome = await probeEndpoint('https://example.com/mcpw', { Authorization: 'Bearer secret-header' }, 1000, NEVER_ABORTED)
+    const outcome = await probeEndpoint('https://example.com/mcp', { Authorization: 'Bearer secret-header' }, 1000, NEVER_ABORTED)
     const headers = (fetchMock.mock.calls[0]?.[1]?.headers ?? {}) as Record<string, string>
     expect(headers['Authorization']).toBe('Bearer secret-header')
     expect(outcome.detail).not.toContain('secret-header')
@@ -108,7 +108,7 @@ describe('probeJob', () => {
         signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')))
       })
     }))
-    const hooks = probeJob({ kind: 'http', url: 'https://example.com/mcpw', headers: {} }, 1000)
+    const hooks = probeJob({ kind: 'http', url: 'https://example.com/mcp', headers: {} }, 1000)
     hooks.cancel()
     const outcome = await hooks.done
     expect(outcome.status).toBe('failed')
@@ -118,7 +118,7 @@ describe('probeJob', () => {
     vi.stubGlobal('fetch', vi.fn(async () => fakeResponse(200, 'OK', {
       result: { serverInfo: { name: 'srv', version: '0.1.0' } },
     })))
-    const hooks = probeJob({ kind: 'http', url: 'https://example.com/mcpw', headers: {} }, 1000)
+    const hooks = probeJob({ kind: 'http', url: 'https://example.com/mcp', headers: {} }, 1000)
     const outcome = await hooks.done
     expect(outcome.status).toBe('completed')
   })
