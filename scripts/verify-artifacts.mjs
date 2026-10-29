@@ -21,11 +21,11 @@ for (const rel of ['lib/index.js', 'lib/typert.host.js', 'lib/client.js']) {
 
 // 2. The ESM host faces must import under plain Node (no tsx, no checkout paths).
 const index = await import(pathToFileURL(path.join(root, 'lib/index.js')).href)
-if (typeof index.apply !== 'function' || index.name !== 'mcp-panel') {
+if (typeof index.apply !== 'function' || index.name !== 'mcp-workbench') {
   throw new Error('lib/index.js exports an unexpected plugin face')
 }
 const typert = await import(pathToFileURL(path.join(root, 'lib/typert.host.js')).href)
-if (typert.TYPERT?.package !== 'dsh-mcp-panel') {
+if (typert.TYPERT?.package !== 'dsh-mcp-workbench') {
   throw new Error('lib/typert.host.js exports an unexpected TYPERT manifest')
 }
 
@@ -34,7 +34,7 @@ const client = readFileSync(path.join(root, 'lib/client.js'), 'utf8')
 if (!client.includes('window.__ModuleLoader__.load({')) {
   throw new Error('lib/client.js is missing the ModuleLoader handshake')
 }
-if (!/id:\s*"dsh-mcp-panel"/.test(client)) {
+if (!/id:\s*"dsh-mcp-workbench"/.test(client)) {
   throw new Error('lib/client.js stamps the wrong bundle id')
 }
 

@@ -1,6 +1,6 @@
 // Headless /mcpw verification over the REAL web profile composition.
 // Run from the deepseek-harness checkout:
-//   node --import tsx/esm Project/Plugins/dsh-mcp-panel/scripts/verify-headless.mjs
+//   node --import tsx/esm Project/Plugins/dsh-mcp-workbench/scripts/verify-headless.mjs
 // Boots the profile's full plugin tree (bundles + user patch layers) in
 // process, binds the webserver to an ephemeral port (--port 0), executes
 // /mcpw against a fake agent through the real commands service, and prints

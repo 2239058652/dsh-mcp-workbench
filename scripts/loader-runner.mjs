@@ -1,5 +1,5 @@
 // scripts/loader-runner.mjs — real Loader composition runner for
-// dsh-mcp-panel (community five-layer model, layer 4). An independent process
+// dsh-mcp-workbench (community five-layer model, layer 4). An independent process
 // boots a real Context, mounts the vendored Loader with the Include builtin,
 // reads the given cordis.yml (service rows + plugin row + config), then
 // asserts the plugin's contributions through the authoritative registries and
@@ -76,7 +76,7 @@ try {
   if (service === undefined) {
     throw new Error('Loader composition: mcpWorkbench service is missing from the context')
   }
-  const session = ctx.sessions.create(SessionId('dsh-mcp-panel-loader-runner'))
+  const session = ctx.sessions.create(SessionId('dsh-mcp-workbench-loader-runner'))
   const agent = /** @type {any} */ ({
     id: session.id,
     options: { provider: 'deepseek', model: 'demo-model' },

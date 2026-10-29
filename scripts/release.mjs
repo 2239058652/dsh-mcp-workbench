@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Release automation for dsh-mcp-panel.
+ * Release automation for dsh-mcp-workbench.
  *
  * Usage: node scripts/release.mjs <version> [--skip-gate]
  *
@@ -13,7 +13,7 @@
  *      verify:self-contained, verify:artifacts) against the bumped version —
  *      the version-consistency tripwire (tests/version.spec.ts) runs inside.
  *   4. Commit `chore(release): <version>` and create the annotated `v<version>`
- *      tag (message: `dsh-mcp-panel v<version>`).
+ *      tag (message: `dsh-mcp-workbench v<version>`).
  *
  * The script never pushes. `git push origin main --follow-tags` ships it; the
  * `release` workflow (release.yml) then re-runs the gate, publishes to npm
@@ -21,7 +21,7 @@
  *
  * On gate failure the two written files are reverted, so the tree stays clean.
  *
- * @module dsh-mcp-panel/scripts/release
+ * @module dsh-mcp-workbench/scripts/release
  */
 
 import { execFileSync } from 'node:child_process'
@@ -116,7 +116,7 @@ try {
 // 4. Commit and tag.
 git('add', 'package.json', 'CHANGELOG.md', 'src/probe.ts')
 git('commit', '-m', `chore(release): ${version}`)
-git('tag', '-a', `v${version}`, '-m', `dsh-mcp-panel v${version}`)
+git('tag', '-a', `v${version}`, '-m', `dsh-mcp-workbench v${version}`)
 
 console.error(`
 released locally: commit + tag v${version}

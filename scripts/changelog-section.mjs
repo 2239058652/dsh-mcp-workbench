@@ -7,7 +7,7 @@
  *
  * Usage: node scripts/changelog-section.mjs <version>
  *
- * @module dsh-mcp-panel/scripts/changelog-section
+ * @module dsh-mcp-workbench/scripts/changelog-section
  */
 
 import { readFileSync } from 'node:fs'

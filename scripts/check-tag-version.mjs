@@ -6,7 +6,7 @@
  *
  * Usage: node scripts/check-tag-version.mjs <ref>  (ref like `v0.3.0`)
  *
- * @module dsh-mcp-panel/scripts/check-tag-version
+ * @module dsh-mcp-workbench/scripts/check-tag-version
  */
 
 import { readFileSync } from 'node:fs'
