@@ -27,7 +27,7 @@ Standalone DeepSeek Harness plugin repository (`dsh-mcp-workbench`). Development
 
 ## Config
 
-Schema in `src/config.ts` (Schemastery, fail-loud bounds, explicit `resolveConfig`): `probeEnabled` (default true), `probeTimeoutMs` (10000), `maxProbes` (10), `refreshIntervalMs` (0 = on demand), `outputLanguage` (`'en' | 'zh' | 'es' | 'pt' | 'hi'`), `passiveProbeEnabled` (false), `passiveProbeIntervalMs` (60000), `writeEnabled` (true), `writeVerifyEnabled` (true), `writeVerifyTimeoutMs` (3000), `backupCount` (5). `cordis.patch.yml` comments document the same keys; the five-language READMEs carry the user-facing table. `package.json#dshWorkshop` is the omdsh-workshop-package/v1 intake manifest for the DSH Hub Workshop registry (declarations only — evidence paths stay null until their adapter runs).
+Schema in `src/config.ts` (Schemastery, fail-loud bounds, explicit `resolveConfig`): `probeEnabled` (default true), `probeTimeoutMs` (10000), `maxProbes` (10), `refreshIntervalMs` (0 = on demand), `outputLanguage` (`'en' | 'zh' | 'es' | 'pt' | 'hi'`), `passiveProbeEnabled` (false), `passiveProbeIntervalMs` (60000), `writeEnabled` (true), `writeVerifyEnabled` (true), `writeVerifyTimeoutMs` (3000), `backupCount` (5). `cordis.patch.yml` comments document the same keys; `README.md` carries the user-facing table. `package.json#dshWorkshop` is the omdsh-workshop-package/v1 intake manifest for the DSH Hub Workshop registry (declarations only — evidence paths stay null until their adapter runs).
 
 ## Build
 
@@ -45,7 +45,7 @@ Schema in `src/config.ts` (Schemastery, fail-loud bounds, explicit `resolveConfi
 
 ## Docs
 
-- Five-language READMEs (`README.md` = 简体中文, `README-en.md`, `README-es.md`, `README-pt.md`, `README-hi.md`) — keep all five in sync; the Chinese file is the default GitHub landing page and the source of truth.
+- One Chinese README (`README.md`) — it is the GitHub landing page and the only README; the other language files were dropped with the fork.
 - GitHub topics: `dsh`, `dsh-plugin`, `deepseek-harness`, `deepseek`, `cordis`, `mcp`, `mcp-client`, `observability`, `panel` (the ecosystem's visibility channel is the `dsh-plugin` topic; see dsh-plugin-guide §9). npm keywords mirror them.
 
 ## Peer versions

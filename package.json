@@ -38,10 +38,6 @@
     "CHANGELOG.md",
     "THIRD_PARTY_NOTICES.md",
     "README.md",
-    "README-en.md",
-    "README-es.md",
-    "README-pt.md",
-    "README-hi.md",
     "LICENSE"
   ],
   "dsh": {
@@ -194,7 +190,6 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "oxlint",
-    "check:readmes": "node scripts/check-readme-sync.mjs",
     "prepare": "node scripts/prepare.mjs",
     "verify:self-contained": "node scripts/verify-self-contained.mjs",
     "verify:artifacts": "node scripts/verify-artifacts.mjs"
