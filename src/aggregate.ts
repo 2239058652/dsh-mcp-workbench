@@ -12,7 +12,7 @@
  *
  * Pure: statuses and reconnect counters are passed in as snapshots.
  *
- * @module dsh-mcp-panel/aggregate
+ * @module dsh-mcp-workbench/aggregate
  */
 
 import { groupMcpTools, type McpToolGroup } from './grouping.ts'

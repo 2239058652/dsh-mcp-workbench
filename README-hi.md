@@ -1,6 +1,6 @@
 <div align="center">
 
-# dsh-mcp-panel
+# dsh-mcp-workbench
 
 **DeepSeek Harness के आधिकारिक MCP क्लाइंट के लिए MCP प्रबंधन कंसोल — सेटिंग्स पेज से MCP सर्वर जोड़ें, बदलें, हटाएँ और टूल आज़माएँ; ईमानदार स्थिति, स्वास्थ्य निदान और सुरक्षित, वापस लाने योग्य प्रोफ़ाइल लेखन के साथ।**
 
@@ -15,7 +15,7 @@
 [English](README-en.md) · [简体中文](README.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
 ```sh
-dsh plugin --profile <name> add dsh-mcp-panel
+dsh plugin --profile <name> add dsh-mcp-workbench
 ```
 
 
@@ -28,9 +28,9 @@ dsh plugin --profile <name> add dsh-mcp-panel
 <!-- star-cta -->
 ## Install & uninstall
 
-- **git चैनल** (नवीनतम `main`): `dsh plugin --profile web add github:2239058652/dsh-mcp-panel` — `prepare` स्क्रिप्ट केवल production निर्भरताओं से बिल्ड करती है।
-- **npm चैनल** (प्रकाशित संस्करण): `dsh plugin --profile web add dsh-mcp-panel`।
-- **tarball चैनल**: इस repo में `pnpm pack`, फिर `dsh plugin --profile web add ./dsh-mcp-panel-<version>.tgz`।
+- **git चैनल** (नवीनतम `main`): `dsh plugin --profile web add github:2239058652/dsh-mcp-workbench` — `prepare` स्क्रिप्ट केवल production निर्भरताओं से बिल्ड करती है।
+- **npm चैनल** (प्रकाशित संस्करण): `dsh plugin --profile web add dsh-mcp-workbench`।
+- **tarball चैनल**: इस repo में `pnpm pack`, फिर `dsh plugin --profile web add ./dsh-mcp-workbench-<version>.tgz`।
 - **अनइंस्टॉल**: `cordis.patch.yml` से `mcp-panel` पंक्ति हटाएँ (वेब सतह इसे हॉट-रीलोड करती है), profile के `node_modules` से पैकेज हटाएँ, और `dsh web --dump-config` से पुष्टि करें कि कोई `mcp-panel` पंक्ति शेष नहीं है।
 
 ## ⭐ 如果它帮到了你
@@ -39,13 +39,13 @@ dsh plugin --profile <name> add dsh-mcp-panel
 
 *English:* part of a 95 plugin family for DeepSeek Harness. If it is useful, **a star helps the next person find it** — nothing is gated behind it.
 
-## What is dsh-mcp-panel?
+## What is dsh-mcp-workbench?
 
 DeepSeek Harness के आधिकारिक MCP क्लाइंट के लिए MCP प्रबंधन कंसोल — सेटिंग्स पेज से MCP सर्वर जोड़ें, बदलें, हटाएँ और टूल आज़माएँ; ईमानदार स्थिति, स्वास्थ्य निदान और सुरक्षित, वापस लाने योग्य प्रोफ़ाइल लेखन के साथ।
 
 आधिकारिक क्लाइंट = पुल, यह प्लगइन = कंसोल: `mcp/status` seam से स्थिति पढ़ें, केवल जोड़ने वाले, अनुमोदित प्रोफ़ाइल patch लिखें।
 
-![dsh-mcp-panel कार्यप्रवाह आरेख: इंस्टॉल → पैनल खोलें → कार्य।](docs/assets/dsh-mcp-panel-flow.svg)
+![dsh-mcp-workbench कार्यप्रवाह आरेख: इंस्टॉल → पैनल खोलें → कार्य।](docs/assets/dsh-mcp-workbench-flow.svg)
 
 *कार्यप्रवाह: इंस्टॉल → पैनल खोलें → कार्य। नीचे के उदाहरण वास्तविक कमांड सतह का उपयोग करते हैं।*
 
@@ -59,16 +59,16 @@ DeepSeek Harness के आधिकारिक MCP क्लाइंट क�
 | हारनेस | DeepSeek Harness `dsh-v0.2.1-rc.2` (2026-10-18 सत्यापित): `engines.dsh >=0.2.1-0 <0.3.0`; P0 संगतता पथ के रिग्रेशन परीक्षण हैं। |
 | Node | `^22.19.0 \|\| >=24.0.0` |
 | प्लेटफ़ॉर्म | Web GUI (दोहरा चेहरा: host + browser) |
-| मॉडल | कोई भी (पैनल रीड-ओनली है; केवल `/mcp` आउटपुट मॉडल-पठनीय है) |
+| मॉडल | कोई भी (पैनल रीड-ओनली है; केवल `/mcpw` आउटपुट मॉडल-पठनीय है) |
 
 ## What you get
 
-`dsh-mcp-panel` आधिकारिक MCP क्लाइंट के ऊपर की अनुभव परत है: एक रीड-ओनली रनटाइम दृश्य और सुरक्षित, वापस लाने योग्य प्रोफ़ाइल लेखन।
+`dsh-mcp-workbench` आधिकारिक MCP क्लाइंट के ऊपर की अनुभव परत है: एक रीड-ओनली रनटाइम दृश्य और सुरक्षित, वापस लाने योग्य प्रोफ़ाइल लेखन।
 
-- **`/mcp` कमांड** — प्रति सर्वर एक पंक्ति: ट्रांसपोर्ट, लक्ष्य, टूल गिनती, कनेक्शन स्थिति (upstream seam से; अप्रेक्षित होने पर `unknown`), अंतिम त्रुटि, रीकनेक्ट — मॉडल-पठनीय, सत्र लॉग से पुनर्निर्माण योग्य, पाँच आउटपुट भाषाएँ।
-- **`/mcp <server> tools`** — मॉडल-दृश्य `mcp__*` टूल नाम व विवरण।
-- **`/mcp <server> health`** — व्युत्पन्न स्व-उपचार सुझाव (ENOENT → अनुपलब्ध निर्भरता, ECONNREFUSED, टाइमआउट, 401/403/404, DNS, दर सीमा, रीकनेक्ट समाप्त…); एग्ज़िट कोड / stderr पूँछ ईमानदारी से *upstream समर्थन की प्रतीक्षा में* चिह्नित।
-- **`/mcp <server> call <tool> [json]`** — **आधिकारिक टूल पाइपलाइन** (`ctx.tools.execute()`) से परीक्षण कॉल; प्री-एग्ज़ीक्यूट अनुमति नीति, अनुमोदन, guards और post-execute सब लागू।
+- **`/mcpw` कमांड** — प्रति सर्वर एक पंक्ति: ट्रांसपोर्ट, लक्ष्य, टूल गिनती, कनेक्शन स्थिति (upstream seam से; अप्रेक्षित होने पर `unknown`), अंतिम त्रुटि, रीकनेक्ट — मॉडल-पठनीय, सत्र लॉग से पुनर्निर्माण योग्य, पाँच आउटपुट भाषाएँ।
+- **`/mcpw <server> tools`** — मॉडल-दृश्य `mcp__*` टूल नाम व विवरण।
+- **`/mcpw <server> health`** — व्युत्पन्न स्व-उपचार सुझाव (ENOENT → अनुपलब्ध निर्भरता, ECONNREFUSED, टाइमआउट, 401/403/404, DNS, दर सीमा, रीकनेक्ट समाप्त…); एग्ज़िट कोड / stderr पूँछ ईमानदारी से *upstream समर्थन की प्रतीक्षा में* चिह्नित।
+- **`/mcpw <server> call <tool> [json]`** — **आधिकारिक टूल पाइपलाइन** (`ctx.tools.execute()`) से परीक्षण कॉल; प्री-एग्ज़ीक्यूट अनुमति नीति, अनुमोदन, guards और post-execute सब लागू।
 - **सेटिंग्स → प्लगइन्स → MCP टैब** — बैज, निदान और प्रोब वाले स्थिति कार्ड, साथ में सर्वर CRUD और टूल ट्रायल कंसोल।
 - **सर्वर CRUD** — जोड़/बदल/हटा फ़ॉर्म → जोड़ने के लिए `insert` और बदलने/हटाने के लिए id-लक्षित ओवरराइड (`- id:` + `name:` + `disabled:`/`config:`) → क्लिपबोर्ड कॉपी या अनुमोदित लेखन, स्वचालित बैकअप और loader के विरुद्ध पुनः सत्यापन के साथ।
 - **Resources ब्राउज़िंग** — आधिकारिक `list_mcp_resources` / `list_mcp_resource_templates` / `read_mcp_resource` टूल से रीड-ओनली संसाधन सूची, टेम्पलेट सूची और URI पठन (`@deepseek-ai/dsh-mcp-resources` सेवा द्वारा जोड़े गए); परिणाम केवल टैब में दिखते हैं, मॉडल संदर्भ में कभी नहीं।
@@ -85,15 +85,15 @@ DeepSeek Harness के आधिकारिक MCP क्लाइंट क�
  (प्रति सर्वर       │     name: '@deepseek-ai/dsh-mcp-client'     │
   एक पंक्ति,        │     config: { serverName, transport, … }    │
   हाथ से)           │   - id: mcp-panel                           │
-                    │     name: dsh-mcp-panel   ◄── यह प्लगइन     │
+                    │     name: dsh-mcp-workbench   ◄── यह प्लगइन     │
                     └───────────────┬────────────────────────────┘
                                     │
         ┌───────────────────────────┴───────────────────────────┐
         │                                                        │
    ┌────▼──────────────┐        ┌───────────────────────────┐    │
-   │ @deepseek-ai/dsh- │        │ dsh-mcp-panel (कंसोल)     │    │
+   │ @deepseek-ai/dsh- │        │ dsh-mcp-workbench (कंसोल)     │    │
    │ mcp-client        │        │                           │    │
-   │ • ट्रांसपोर्ट     │        │ • /mcp कमांड              │    │
+   │ • ट्रांसपोर्ट     │        │ • /mcpw कमांड              │    │
    │ • टूल सिंक        │        │ • सेटिंग्स → प्लगइन्स →   │    │
    │ • mcp__* टूल      │◄──────►│   MCP: CRUD, ट्रायल       │    │
    │ • mcp/status seam │ स्थिति │ • स्वास्थ्य निदान         │    │
@@ -105,14 +105,14 @@ DeepSeek Harness के आधिकारिक MCP क्लाइंट क�
 
 ## Console vs. hand-written cordis.yml
 
-| | हाथ से लिखा cordis.yml | dsh-mcp-panel कंसोल |
+| | हाथ से लिखा cordis.yml | dsh-mcp-workbench कंसोल |
 |---|---|---|
 | सर्वर जोड़ें | YAML संपादित करें, इंडेंट/कोट्स का ध्यान | फ़ॉर्म → patch अंश → **कॉपी** या **लिखें** (अनुमोदन + बैकअप) |
 | सर्वर बदलें | YAML संपादित करें, रीस्टार्ट/हॉट-रीलोड | लाइव पंक्ति से पहले से भरा फ़ॉर्म; बिना बदले सीक्रेट host पर ही रहते हैं |
 | सर्वर हटाएँ | पंक्ति मिटाएँ | `- id:` + `disabled: true` ओवरराइड (patch शब्दावली में remove नहीं) — कभी भी फिर से सक्षम करने योग्य |
 | स्थिति देखें | लॉग पढ़ें | बैज + रीकनेक्ट + अंतिम त्रुटि, `mcp/status` से लाइव |
 | टूल आज़माएँ | मॉडल से कहें | ट्रायल कंसोल → आधिकारिक `ctx.tools.execute()` पाइपलाइन (अनुमतियाँ और अनुमोदन लागू) |
-| विफलताओं का निदान | लॉग grep करें | `/mcp <server> health` व्युत्पन्न सुझावों के साथ |
+| विफलताओं का निदान | लॉग grep करें | `/mcpw <server> health` व्युत्पन्न सुझावों के साथ |
 | गलतियाँ | हाथ से वापस लाएँ | हर लेखन केवल-जोड़ने वाला है और समय-चिह्नित बैकअप छोड़ता है |
 
 कंसोल का आउटपुट ही `cordis.patch.yml` शब्दावली है — वही पंक्तियाँ जो आप हाथ से लिखते, अब जनरेट, पूर्वावलोकित और सुरक्षित रूप से लागू।
@@ -120,15 +120,15 @@ DeepSeek Harness के आधिकारिक MCP क्लाइंट क�
 ## Quick start
 
 ```sh
-dsh plugin --profile web add github:2239058652/dsh-mcp-panel
+dsh plugin --profile web add github:2239058652/dsh-mcp-workbench
 ```
 
 ```sh
 # 1. bundle को अपने profile में इंस्टॉल करें
-dsh plugin --profile web add github:2239058652/dsh-mcp-panel
+dsh plugin --profile web add github:2239058652/dsh-mcp-workbench
 
 # या npm से (प्रकाशित संस्करण)
-dsh plugin --profile web add dsh-mcp-panel
+dsh plugin --profile web add dsh-mcp-workbench
 
 # 2. रीस्टार्ट करें और पंक्ति की पुष्टि करें
 dsh --profile web --dump-config | grep -A3 'id: mcp-panel'
@@ -137,10 +137,10 @@ dsh --profile web --dump-config | grep -A3 'id: mcp-panel'
 फिर **सेटिंग्स → प्लगइन्स → MCP** खोलें, या चलाएँ:
 
 ```text
-/mcp
-/mcp everything tools
-/mcp everything health
-/mcp everything call echo '{"message": "hi"}'
+/mcpw
+/mcpw everything tools
+/mcpw everything health
+/mcpw everything call echo '{"message": "hi"}'
 ```
 
 ### उदाहरण
@@ -152,7 +152,7 @@ dsh --profile web --dump-config | grep -A3 'id: mcp-panel'
 **कमांड**
 
 ~~~sh
-/mcp github tools
+/mcpw github tools
 ~~~
 
 **आउटपुट**
@@ -162,14 +162,14 @@ Tools of "github" (1, model-visible public names):
 - mcp__github__create_issue — Create a new issue in a GitHub repository
 ~~~
 
-*स्रोत `plugins/dsh-mcp-panel/tests/command.spec.ts:99-110; renderer at src/command.ts:352-360`*
+*स्रोत `plugins/dsh-mcp-workbench/tests/command.spec.ts:99-110; renderer at src/command.ts:352-360`*
 
 #### विफलता शाखा
 
 **इनपुट**
 
 ~~~text
-/mcp nope tools
+/mcpw nope tools
 ~~~
 
 **आउटपुट**
@@ -178,12 +178,12 @@ Tools of "github" (1, model-visible public names):
 Unknown MCP server "nope" (configured: github)
 ~~~
 
-*स्रोत `plugins/dsh-mcp-panel/src/command.ts:104-105; plugins/dsh-mcp-panel/tests/command.spec.ts:152-157`*
+*स्रोत `plugins/dsh-mcp-workbench/src/command.ts:104-105; plugins/dsh-mcp-workbench/tests/command.spec.ts:152-157`*
 
 #### संक्षिप्त उदाहरण
 
-- `/mcp <server> tools`
-- `/mcp <server> health`
+- `/mcpw <server> tools`
+- `/mcpw <server> health`
 
 ## Configuration
 
@@ -195,10 +195,10 @@ Unknown MCP server "nope" (configured: github)
 | `probeTimeoutMs` | `10000` | प्रति-प्रोब timeout (ms) |
 | `maxProbes` | `10` | पैनल में दिखाए गए प्रोब रिकॉर्ड |
 | `refreshIntervalMs` | `0` | सुझाया गया पैनल रीफ़्रेश (ms); `0` = माँग पर |
-| `outputLanguage` | `en` | `/mcp` आउटपुट भाषा: `en \| zh \| es \| pt \| hi` |
+| `outputLanguage` | `en` | `/mcpw` आउटपुट भाषा: `en \| zh \| es \| pt \| hi` |
 | `passiveProbeEnabled` | `false` | streamable-http सर्वरों की आवधिक जाँच |
 | `passiveProbeIntervalMs` | `60000` | निष्क्रिय प्रोब अंतराल (ms) |
-| `trialEnabled` | `true` | टूल ट्रायल कंसोल (सेटिंग्स टैब + `/mcp call`) |
+| `trialEnabled` | `true` | टूल ट्रायल कंसोल (सेटिंग्स टैब + `/mcpw call`) |
 | `trialTimeoutMs` | `120000` | प्रति ट्रायल कॉल पैनल-साइड समय सीमा (ms) |
 | `trialMaxResultChars` | `60000` | ट्रायल परिणाम payload की सीमा (वर्ण) |
 | `writeEnabled` | `true` | कठोर स्विच: `false` हर प्रोफ़ाइल लेखन अस्वीकार करता है (कॉपी फिर भी चलती है) |
@@ -211,10 +211,10 @@ Unknown MCP server "nope" (configured: github)
 
 | सतह | प्रकार | टिप्पणियाँ |
 |---|---|---|
-| `/mcp` | command | प्रति-सर्वर स्थिति पंक्ति; मॉडल-पठनीय और लॉग-पुनर्निर्माण योग्य |
-| `/mcp <server> tools` | command | मॉडल-दृश्य `mcp__*` टूल नाम + विवरण |
-| `/mcp <server> health` | command | सैनिटाइज़्ड त्रुटि पाठ से व्युत्पन्न स्व-उपचार सुझाव |
-| `/mcp <server> call <tool> [json]` | command | आधिकारिक टूल पाइपलाइन से परीक्षण कॉल |
+| `/mcpw` | command | प्रति-सर्वर स्थिति पंक्ति; मॉडल-पठनीय और लॉग-पुनर्निर्माण योग्य |
+| `/mcpw <server> tools` | command | मॉडल-दृश्य `mcp__*` टूल नाम + विवरण |
+| `/mcpw <server> health` | command | सैनिटाइज़्ड त्रुटि पाठ से व्युत्पन्न स्व-उपचार सुझाव |
+| `/mcpw <server> call <tool> [json]` | command | आधिकारिक टूल पाइपलाइन से परीक्षण कॉल |
 | `mcp_probe` | tool | वैकल्पिक Streamable HTTP कनेक्टिविटी प्रोब (पृष्ठभूमि कार्य) |
 | सेटिंग्स → प्लगइन्स → MCP टैब | UI slot | स्थिति कार्ड, सर्वर CRUD और टूल ट्रायल कंसोल |
 | `mcpPanel` Typert Remote | service | रीड-ओनली स्नैपशॉट चैनल (host → client) |
@@ -250,7 +250,7 @@ MCP **prompt टेम्पलेट** और **संसाधन सदस्
 pnpm run typecheck && pnpm run typecheck:ci && pnpm test && pnpm run build && pnpm run verify:self-contained && pnpm run verify:artifacts && pnpm pack
 ```
 
-`scripts/verify-headless.mjs` वास्तविक web profile बूट करता है और `/mcp` का सटीक आउटपुट छापता है। प्रकाशन: `node scripts/release.mjs <x.y.z>` पूरी जाँच चलाता है, commit करता है और स्थानीय रूप से `v<x.y.z>` टैग करता है (कभी push नहीं करता)।
+`scripts/verify-headless.mjs` वास्तविक web profile बूट करता है और `/mcpw` का सटीक आउटपुट छापता है। प्रकाशन: `node scripts/release.mjs <x.y.z>` पूरी जाँच चलाता है, commit करता है और स्थानीय रूप से `v<x.y.z>` टैग करता है (कभी push नहीं करता)।
 
 ## Topics
 
@@ -314,7 +314,7 @@ pnpm run typecheck && pnpm run typecheck:ci && pnpm test && pnpm run build && pn
 | **[dsh-local-ai](https://github.com/PerryLink/dsh-local-ai)** |  |
 | **[dsh-lsp-actions](https://github.com/PerryLink/dsh-lsp-actions)** |  |
 | **[dsh-mask](https://github.com/PerryLink/dsh-mask)** |  |
-| **[dsh-mcp-panel](https://github.com/PerryLink/dsh-mcp-panel)** |  |
+| **[dsh-mcp-workbench](https://github.com/PerryLink/dsh-mcp-panel)** |  |
 | **[dsh-medrec-qc](https://github.com/PerryLink/dsh-medrec-qc)** |  |
 | **[dsh-memento](https://github.com/PerryLink/dsh-memento)** |  |
 | **[dsh-nsfc-form-check](https://github.com/PerryLink/dsh-nsfc-form-check)** |  |
@@ -371,7 +371,7 @@ pnpm run typecheck && pnpm run typecheck:ci && pnpm test && pnpm run build && pn
 
 ## License
 
-[Apache License 2.0](LICENSE) © 2026 dsh-mcp-panel योगदानकर्ता
+[Apache License 2.0](LICENSE) © 2026 dsh-mcp-workbench योगदानकर्ता
 
 ### DSH Desktop मार्केट से इंस्टॉल करें
 

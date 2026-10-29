@@ -6,7 +6,7 @@
  * and installs its scoped stylesheet. Pure registration behavior — no
  * component rendering.
  *
- * @module dsh-mcp-panel/test/client-registration.spec
+ * @module dsh-mcp-workbench/test/client-registration.spec
  */
 
 import { describe, expect, it, vi } from 'vitest'
@@ -36,7 +36,7 @@ function makeCtx(remoteStatus: () => Promise<unknown>, remoteProbe: (name: strin
         mounted.push(contribution)
         return () => undefined
       }),
-      mcpPanel: { status: remoteStatus, probe: remoteProbe },
+      mcpWorkbench: { status: remoteStatus, probe: remoteProbe },
     },
     slots,
     inject: vi.fn((_deps: string[], callback: (scope: unknown) => void) => { callback(ctx) }),
@@ -77,11 +77,11 @@ describe('client apply', () => {
     expect(registered[0]!.options).toMatchObject({
       name: 'sidebar.panellist',
       id: PANEL_ID,
-      locale: 'settings.mcpPanel',
+      locale: 'settings.mcpWorkbench',
     })
     expect(typeof registered[0]!.options['label']).toBe('function')
-    expect(registered[1]!.options).toMatchObject({ name: 'main', key: PANEL_ID, locale: 'settings.mcpPanel' })
-    expect(PANEL_ID).toBe('mcp')
+    expect(registered[1]!.options).toMatchObject({ name: 'main', key: PANEL_ID, locale: 'settings.mcpWorkbench' })
+    expect(PANEL_ID).toBe('mcp-workbench')
   })
 
   it('unwraps a successful RemoteResult into the snapshot value', async () => {
@@ -99,7 +99,7 @@ describe('client apply', () => {
     }))
     await apply(ctx)
     const injected = (mainPanel(registered)['inject'] as () => { status: () => Promise<unknown> })()
-    await expect(injected.status()).rejects.toThrow('mcpPanel.status failed: service-unavailable: host down')
+    await expect(injected.status()).rejects.toThrow('mcpWorkbench.status failed: service-unavailable: host down')
   })
 
   it('unwraps a successful probe RemoteResult and forwards failures', async () => {
@@ -111,12 +111,12 @@ describe('client apply', () => {
     await expect(injected.probe('web')).resolves.toEqual({ jobId: 'mcp-probe-9', note: 'panel-only' })
     expect(probe).toHaveBeenCalledWith('web')
     probe.mockResolvedValueOnce({ ok: false, error: { code: 'business', message: 'nope' } })
-    await expect(injected.probe('web')).rejects.toThrow('mcpPanel.probe failed: business: nope')
+    await expect(injected.probe('web')).rejects.toThrow('mcpWorkbench.probe failed: business: nope')
   })
 
   it('installs the scoped stylesheet once', async () => {
     const { ctx } = makeCtx(async () => ({ ok: true, value: null }))
     await apply(ctx)
-    expect(document.querySelector('style[data-dsh-mcp-panel]')).not.toBeNull()
+    expect(document.querySelector('style[data-dsh-mcp-workbench]')).not.toBeNull()
   })
 })

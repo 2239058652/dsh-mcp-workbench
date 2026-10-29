@@ -26,7 +26,7 @@
  * the panel falls back to derived facts and reports
  * `statusSource: 'derived'`.
  *
- * @module dsh-mcp-panel/upstream
+ * @module dsh-mcp-workbench/upstream
  */
 
 /** Supervisor phase after one `mcp/status` transition (mirrors the shipped seam). */

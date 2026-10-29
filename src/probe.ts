@@ -4,14 +4,14 @@
  * UNOWNED background job. Probe results are panel-only — the tool returns
  * just the job id and a pointer to the settings tab, the job carries no
  * owner (so no completion notice is injected into the model), and the panel
- * reads the sanitized snapshot back through `mcpPanel/status`.
+ * reads the sanitized snapshot back through `mcpWorkbench/status`.
  *
  * The stdio probe spawns the configured `command`/`args` with the same
  * `scrubbedParentEnv` base the mcp-client bridge uses (credential-shaped and
  * `DSH_*` names never leak into the child implicitly) plus the row's explicit
  * `env`/`cwd`, and completes one MCP `initialize` handshake over stdin/stdout.
  *
- * @module dsh-mcp-panel/probe
+ * @module dsh-mcp-workbench/probe
  */
 
 /**
@@ -56,7 +56,7 @@ const INITIALIZE_PROTOCOL_VERSION = '2024-11-05'
 /** MCP clientInfo facts; protocol constants, not configuration. Exported so the
  * version-consistency tripwire (`tests/version.spec.ts`) can assert the
  * advertised version tracks the package version. */
-export const PROBE_CLIENT_INFO = { name: 'dsh-mcp-panel', version: '0.6.29' }
+export const PROBE_CLIENT_INFO = { name: 'dsh-mcp-workbench', version: '0.6.29' }
 
 /** One settled probe: outcome status plus a sanitized one-line detail. */
 export interface ProbeOutcome {

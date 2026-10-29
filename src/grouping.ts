@@ -8,7 +8,7 @@
  *
  * Pure functions of the schema snapshot — no registry reads.
  *
- * @module dsh-mcp-panel/grouping
+ * @module dsh-mcp-workbench/grouping
  */
 
 import type { McpToolView } from './wire.ts'

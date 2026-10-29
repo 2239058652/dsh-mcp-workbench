@@ -4,7 +4,7 @@
  * YAML scalar quoting, deterministic fragment rendering, and entry-id
  * allocation.
  *
- * @module dsh-mcp-panel/test/patch.spec
+ * @module dsh-mcp-workbench/test/patch.spec
  */
 
 import { describe, expect, it } from 'vitest'
@@ -89,7 +89,7 @@ describe('renderPatchFragment', () => {
         env: { TOKEN: 'yes' },
       },
     }, date)
-    expect(fragment).toContain('# dsh-mcp-panel: add server (2026-08-20)')
+    expect(fragment).toContain('# dsh-mcp-workbench: add server (2026-08-20)')
     expect(fragment).toContain('- insert:')
     expect(fragment).toContain('- id: mcp-github')
     expect(fragment).toContain("name: '@deepseek-ai/dsh-mcp-client'")

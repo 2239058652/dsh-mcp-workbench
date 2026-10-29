@@ -9,7 +9,7 @@
  * Every write is reversible: the backup restores the previous state, and an
  * appended block can be hand-removed to undo.
  *
- * @module dsh-mcp-panel/write
+ * @module dsh-mcp-workbench/write
  */
 
 import { readdir, copyFile, readFile, writeFile, unlink } from 'node:fs/promises'
@@ -18,7 +18,7 @@ import { join } from 'node:path'
 const BACKUP_SUFFIX = '.bak-'
 
 /** Fresh-file header when the patch layer does not exist yet. */
-const FRESH_FILE_HEADER = `# dsh-mcp-panel managed patch layer (created by the MCP console).
+const FRESH_FILE_HEADER = `# dsh-mcp-workbench managed patch layer (created by the MCP console).
 # Operations are APPEND-ONLY: the console never rewrites existing content.
 `
 
@@ -92,7 +92,7 @@ async function appendFragment(filePath: string, fragment: string): Promise<numbe
   // write would otherwise surface as a "written" success (issue #27 hardening).
   const after = await readFile(filePath, 'utf8')
   if (!after.includes(fragment)) {
-    throw new Error('dsh-mcp-panel: the appended patch fragment could not be read back — the write is suspect; inspect the file before retrying')
+    throw new Error('dsh-mcp-workbench: the appended patch fragment could not be read back — the write is suspect; inspect the file before retrying')
   }
   return Buffer.byteLength(block, 'utf8')
 }

@@ -16,7 +16,7 @@
  * so the strict wire codec carries one bounded scalar; the client re-parses
  * and pretty-prints. Trial results never enter model context.
  *
- * @module dsh-mcp-panel/trial
+ * @module dsh-mcp-workbench/trial
  */
 
 import type { ToolExecutionResult, ToolExecutionInput, ToolRuntime } from '@deepseek-ai/dsh-tools'
@@ -57,7 +57,7 @@ export interface McpTrialLimits {
 }
 
 /** Panel-owned marker prefix so trial callIds can never collide with model calls. */
-const TRIAL_CALL_PREFIX = 'mcp-panel-trial'
+const TRIAL_CALL_PREFIX = 'mcp-workbench-trial'
 
 /**
  * The official shared resource tools (`@deepseek-ai/dsh-mcp-resources`).
@@ -179,7 +179,7 @@ function projectTrialResult(result: ToolExecutionResult, budget: number): { json
 }
 
 /** Placeholder emitted when the display budget is exhausted mid-structure. */
-const CAP_MARKER = '[dsh-mcp-panel: result exceeded the display cap]'
+const CAP_MARKER = '[dsh-mcp-workbench: result exceeded the display cap]'
 
 /** Recursively cap one JSON value to a character budget, keeping it valid JSON. */
 function capJsonValue(value: unknown, budget: number): { capped: unknown; truncated: boolean } {

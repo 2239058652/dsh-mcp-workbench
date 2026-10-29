@@ -17,7 +17,7 @@
  * the output language is a config choice (`outputLanguage: en|zh`) without
  * touching the command lifecycle.
  *
- * @module dsh-mcp-panel/command
+ * @module dsh-mcp-workbench/command
  */
 
 import type { CommandDefinition } from '@deepseek-ai/dsh-commands'
@@ -482,7 +482,7 @@ export function renderHealth(view: McpServerView, messages: CommandMessages = EN
 export function mcpCommand(service: McpPanelService, language: CommandLanguage = 'en'): CommandDefinition {
   const messages = MESSAGES[language] ?? EN_MESSAGES
   return {
-    name: 'mcp',
+    name: 'mcpw',
     description: 'Show MCP server status, tools, health diagnostics, and enable/disable patch suggestions; trial-call a tool through the official pipeline',
     input: { hint: messages.hint },
     handler: ({ rawInput, agent }) => {

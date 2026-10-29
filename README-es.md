@@ -1,6 +1,6 @@
 <div align="center">
 
-# dsh-mcp-panel
+# dsh-mcp-workbench
 
 **La consola de gestión MCP para el cliente MCP oficial de DeepSeek Harness: añade, edita, elimina y prueba servidores MCP desde una página de ajustes, con estado honesto, diagnósticos de salud y escrituras de perfil seguras y reversibles.**
 
@@ -15,7 +15,7 @@
 [English](README-en.md) · [简体中文](README.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
 ```sh
-dsh plugin --profile <name> add dsh-mcp-panel
+dsh plugin --profile <name> add dsh-mcp-workbench
 ```
 
 
@@ -28,9 +28,9 @@ dsh plugin --profile <name> add dsh-mcp-panel
 <!-- star-cta -->
 ## Install & uninstall
 
-- **Canal git** (último `main`): `dsh plugin --profile web add github:2239058652/dsh-mcp-panel` — el script `prepare` construye solo con dependencias de producción.
-- **Canal npm** (versiones publicadas): `dsh plugin --profile web add dsh-mcp-panel`.
-- **Canal tarball**: `pnpm pack` en este repo, luego `dsh plugin --profile web add ./dsh-mcp-panel-<version>.tgz`.
+- **Canal git** (último `main`): `dsh plugin --profile web add github:2239058652/dsh-mcp-workbench` — el script `prepare` construye solo con dependencias de producción.
+- **Canal npm** (versiones publicadas): `dsh plugin --profile web add dsh-mcp-workbench`.
+- **Canal tarball**: `pnpm pack` en este repo, luego `dsh plugin --profile web add ./dsh-mcp-workbench-<version>.tgz`.
 - **Desinstalar**: elimina la fila `mcp-panel` de `cordis.patch.yml` (la superficie web la recarga en caliente), borra el paquete del `node_modules` del perfil y verifica con `dsh web --dump-config` que no quede ninguna fila `mcp-panel`.
 
 ## ⭐ 如果它帮到了你
@@ -39,13 +39,13 @@ Este plugin forma parte de la [familia de plugins DSH](https://github.com/PerryL
 
 *English:* part of a 95 plugin family for DeepSeek Harness. If it is useful, **a star helps the next person find it** — nothing is gated behind it.
 
-## What is dsh-mcp-panel?
+## What is dsh-mcp-workbench?
 
 La consola de gestión MCP para el cliente MCP oficial de DeepSeek Harness: añade, edita, elimina y prueba servidores MCP desde una página de ajustes, con estado honesto, diagnósticos de salud y escrituras de perfil seguras y reversibles.
 
 Cliente oficial = puente, este plugin = consola: lee el estado por el seam `mcp/status`, escribe solo parches de perfil de solo-anexar y con aprobación.
 
-![Diagrama de flujo de dsh-mcp-panel: instalar → abrir panel → actuar.](docs/assets/dsh-mcp-panel-flow.svg)
+![Diagrama de flujo de dsh-mcp-workbench: instalar → abrir panel → actuar.](docs/assets/dsh-mcp-workbench-flow.svg)
 
 *Resumen del flujo: instalar → abrir panel → actuar. Los ejemplos siguientes usan la superficie de comandos real.*
 
@@ -59,16 +59,16 @@ Cliente oficial = puente, este plugin = consola: lee el estado por el seam `mcp/
 | Harness | DeepSeek Harness `dsh-v0.2.1-rc.2` (verificado 2026-10-18): `engines.dsh >=0.2.1-0 <0.3.0`; las rutas de compatibilidad P0 tienen pruebas de regresión. |
 | Node | `^22.19.0 \|\| >=24.0.0` |
 | Plataformas | Web GUI (doble cara: host + navegador) |
-| Modelo | Cualquiera (el panel es de solo lectura; solo la salida de `/mcp` es legible por el modelo) |
+| Modelo | Cualquiera (el panel es de solo lectura; solo la salida de `/mcpw` es legible por el modelo) |
 
 ## What you get
 
-`dsh-mcp-panel` es la capa de experiencia sobre el cliente MCP oficial: una vista de runtime de solo lectura más escrituras de perfil seguras y reversibles.
+`dsh-mcp-workbench` es la capa de experiencia sobre el cliente MCP oficial: una vista de runtime de solo lectura más escrituras de perfil seguras y reversibles.
 
-- **Comando `/mcp`** — una fila por servidor: transporte, destino, número de herramientas, estado de conexión (desde el seam upstream; `unknown` cuando no hay observación), último error, reconexiones — legible por el modelo, reconstruible del log de sesión, cinco idiomas de salida.
-- **`/mcp <servidor> tools`** — nombres y descripciones de las herramientas `mcp__*` visibles para el modelo.
-- **`/mcp <servidor> health`** — sugerencias de autorreparación derivadas (ENOENT → dependencia faltante, ECONNREFUSED, timeouts, 401/403/404, DNS, rate limit, reconexión agotada…); código de salida / stderr etiquetados honestamente como *pendiente de soporte upstream*.
-- **`/mcp <servidor> call <tool> [json]`** — llamada de prueba por el **pipeline oficial de herramientas** (`ctx.tools.execute()`); política de permisos pre-ejecución, aprobación, guards y post-ejecución, todo en vigor.
+- **Comando `/mcpw`** — una fila por servidor: transporte, destino, número de herramientas, estado de conexión (desde el seam upstream; `unknown` cuando no hay observación), último error, reconexiones — legible por el modelo, reconstruible del log de sesión, cinco idiomas de salida.
+- **`/mcpw <servidor> tools`** — nombres y descripciones de las herramientas `mcp__*` visibles para el modelo.
+- **`/mcpw <servidor> health`** — sugerencias de autorreparación derivadas (ENOENT → dependencia faltante, ECONNREFUSED, timeouts, 401/403/404, DNS, rate limit, reconexión agotada…); código de salida / stderr etiquetados honestamente como *pendiente de soporte upstream*.
+- **`/mcpw <servidor> call <tool> [json]`** — llamada de prueba por el **pipeline oficial de herramientas** (`ctx.tools.execute()`); política de permisos pre-ejecución, aprobación, guards y post-ejecución, todo en vigor.
 - **Ajustes → Plugins → MCP** — tarjetas de estado con insignias, diagnósticos y sondas, más el CRUD de servidores y el banco de pruebas de herramientas.
 - **CRUD de servidores** — formularios de alta/edición/borrado → `insert` para alta y anulaciones dirigidas por id (`- id:` + `name:` + `disabled:`/`config:`) para edición/borrado → copia al portapapeles o escritura con aprobación, copias de seguridad automáticas y re-verificación contra el loader.
 - **Navegación de Resources** — listado de recursos, listado de plantillas y lecturas de URI de solo lectura mediante las herramientas oficiales `list_mcp_resources` / `list_mcp_resource_templates` / `read_mcp_resource` (puenteadas por el servicio `@deepseek-ai/dsh-mcp-resources`); los resultados se muestran solo en la pestaña, nunca en el contexto del modelo.
@@ -85,15 +85,15 @@ Cliente oficial = puente, este plugin = consola: lee el estado por el seam `mcp/
  (una fila por      │     name: '@deepseek-ai/dsh-mcp-client'     │
   servidor, a mano) │     config: { serverName, transport, … }    │
                     │   - id: mcp-panel                           │
-                    │     name: dsh-mcp-panel   ◄── este plugin   │
+                    │     name: dsh-mcp-workbench   ◄── este plugin   │
                     └───────────────┬────────────────────────────┘
                                     │
         ┌───────────────────────────┴───────────────────────────┐
         │                                                        │
    ┌────▼──────────────┐        ┌───────────────────────────┐    │
-   │ @deepseek-ai/dsh- │        │ dsh-mcp-panel (consola)   │    │
+   │ @deepseek-ai/dsh- │        │ dsh-mcp-workbench (consola)   │    │
    │ mcp-client        │        │                           │    │
-   │ • transporte      │        │ • comando /mcp            │    │
+   │ • transporte      │        │ • comando /mcpw            │    │
    │ • sincronización  │        │ • Ajustes → Plugins →     │    │
    │ • herramientas    │◄──────►│   MCP: CRUD, banco de     │    │
    │ • seam mcp/status │ estado │ • diagnósticos de salud   │    │
@@ -105,14 +105,14 @@ La consola **lee** el cliente por su seam de observabilidad `mcp/status` (evento
 
 ## Console vs. hand-written cordis.yml
 
-| | cordis.yml a mano | Consola dsh-mcp-panel |
+| | cordis.yml a mano | Consola dsh-mcp-workbench |
 |---|---|---|
 | Añadir servidor | Editar YAML, cuidar indentación/comillas | Formulario → fragmento de parche → **copiar** o **escribir** (aprobación + copia de seguridad) |
 | Editar servidor | Editar YAML, reiniciar/recarga en caliente | Formulario precargado de la fila en vivo; los secretos sin cambios conservan su valor en el host |
 | Eliminar servidor | Borrar la fila | Anulación `- id:` + `disabled: true` (el vocabulario de parches no tiene remove) — re-habilitable |
 | Ver estado | Leer logs | Insignias + reconexiones + último error, en vivo desde `mcp/status` |
 | Probar una herramienta | Pedírselo al modelo | Banco de pruebas → pipeline oficial `ctx.tools.execute()` (permisos y aprobación en vigor) |
-| Diagnosticar fallos | grep de logs | `/mcp <servidor> health` con sugerencias derivadas |
+| Diagnosticar fallos | grep de logs | `/mcpw <servidor> health` con sugerencias derivadas |
 | Errores | Revertir a mano | Cada escritura es solo-anexar y deja una copia de seguridad con marca de tiempo |
 
 La salida de la consola ES el vocabulario de `cordis.patch.yml` — las mismas líneas que escribirías a mano, generadas, previsualizadas y aplicadas con seguridad.
@@ -120,15 +120,15 @@ La salida de la consola ES el vocabulario de `cordis.patch.yml` — las mismas l
 ## Quick start
 
 ```sh
-dsh plugin --profile web add github:2239058652/dsh-mcp-panel
+dsh plugin --profile web add github:2239058652/dsh-mcp-workbench
 ```
 
 ```sh
 # 1. instala el bundle en tu perfil
-dsh plugin --profile web add github:2239058652/dsh-mcp-panel
+dsh plugin --profile web add github:2239058652/dsh-mcp-workbench
 
 # o desde npm (versiones publicadas)
-dsh plugin --profile web add dsh-mcp-panel
+dsh plugin --profile web add dsh-mcp-workbench
 
 # 2. reinicia y verifica la fila
 dsh --profile web --dump-config | grep -A3 'id: mcp-panel'
@@ -137,10 +137,10 @@ dsh --profile web --dump-config | grep -A3 'id: mcp-panel'
 Luego abre **Ajustes → Plugins → MCP**, o ejecuta:
 
 ```text
-/mcp
-/mcp everything tools
-/mcp everything health
-/mcp everything call echo '{"message": "hi"}'
+/mcpw
+/mcpw everything tools
+/mcpw everything health
+/mcpw everything call echo '{"message": "hi"}'
 ```
 
 ### Ejemplos
@@ -152,7 +152,7 @@ Son los puntos de entrada reales; instala y llama a uno.
 **Comando**
 
 ~~~sh
-/mcp github tools
+/mcpw github tools
 ~~~
 
 **Salida**
@@ -162,14 +162,14 @@ Tools of "github" (1, model-visible public names):
 - mcp__github__create_issue — Create a new issue in a GitHub repository
 ~~~
 
-*Observado en `plugins/dsh-mcp-panel/tests/command.spec.ts:99-110; renderer at src/command.ts:352-360`*
+*Observado en `plugins/dsh-mcp-workbench/tests/command.spec.ts:99-110; renderer at src/command.ts:352-360`*
 
 #### Rama de fallo
 
 **Entrada**
 
 ~~~text
-/mcp nope tools
+/mcpw nope tools
 ~~~
 
 **Salida**
@@ -178,12 +178,12 @@ Tools of "github" (1, model-visible public names):
 Unknown MCP server "nope" (configured: github)
 ~~~
 
-*Observado en `plugins/dsh-mcp-panel/src/command.ts:104-105; plugins/dsh-mcp-panel/tests/command.spec.ts:152-157`*
+*Observado en `plugins/dsh-mcp-workbench/src/command.ts:104-105; plugins/dsh-mcp-workbench/tests/command.spec.ts:152-157`*
 
 #### Ejemplos breves
 
-- `/mcp <server> tools`
-- `/mcp <server> health`
+- `/mcpw <server> tools`
+- `/mcpw <server> health`
 
 ## Configuration
 
@@ -195,10 +195,10 @@ Todas las opciones son campos Schemastery `Config` (modificables desde cordis.ym
 | `probeTimeoutMs` | `10000` | Tiempo límite por sonda en ms |
 | `maxProbes` | `10` | Registros de sonda mostrados en el panel |
 | `refreshIntervalMs` | `0` | Refresco sugerido del panel en ms; `0` = bajo demanda |
-| `outputLanguage` | `en` | Idioma de salida de `/mcp`: `en \| zh \| es \| pt \| hi` |
+| `outputLanguage` | `en` | Idioma de salida de `/mcpw`: `en \| zh \| es \| pt \| hi` |
 | `passiveProbeEnabled` | `false` | Sondear periódicamente servidores streamable-http |
 | `passiveProbeIntervalMs` | `60000` | Intervalo de sonda pasiva en ms |
-| `trialEnabled` | `true` | Banco de pruebas de herramientas (pestaña de ajustes + `/mcp call`) |
+| `trialEnabled` | `true` | Banco de pruebas de herramientas (pestaña de ajustes + `/mcpw call`) |
 | `trialTimeoutMs` | `120000` | Plazo del panel por llamada de prueba en ms |
 | `trialMaxResultChars` | `60000` | Tope del payload de resultado de prueba en caracteres |
 | `writeEnabled` | `true` | Interruptor de seguridad: `false` rechaza toda escritura (copiar sigue funcionando) |
@@ -211,10 +211,10 @@ Todas las opciones son campos Schemastery `Config` (modificables desde cordis.ym
 
 | Superficie | Tipo | Notas |
 |---|---|---|
-| `/mcp` | command | Fila de estado por servidor; legible por el modelo y reconstruible del log |
-| `/mcp <servidor> tools` | command | Nombres + descripciones de `mcp__*` visibles para el modelo |
-| `/mcp <servidor> health` | command | Sugerencias de autorreparación derivadas del texto de error saneado |
-| `/mcp <servidor> call <tool> [json]` | command | Llamada de prueba por el pipeline oficial de herramientas |
+| `/mcpw` | command | Fila de estado por servidor; legible por el modelo y reconstruible del log |
+| `/mcpw <servidor> tools` | command | Nombres + descripciones de `mcp__*` visibles para el modelo |
+| `/mcpw <servidor> health` | command | Sugerencias de autorreparación derivadas del texto de error saneado |
+| `/mcpw <servidor> call <tool> [json]` | command | Llamada de prueba por el pipeline oficial de herramientas |
 | `mcp_probe` | tool | Sonda opcional de conectividad Streamable HTTP (trabajo en segundo plano) |
 | Ajustes → Plugins → MCP | Slot de UI | Tarjetas de estado, CRUD de servidores y banco de pruebas |
 | Remote Typert `mcpPanel` | service | Canal de instantáneas de solo lectura (host → cliente) |
@@ -250,7 +250,7 @@ Las **plantillas de prompts** y las **suscripciones a recursos** siguen diferida
 pnpm run typecheck && pnpm run typecheck:ci && pnpm test && pnpm run build && pnpm run verify:self-contained && pnpm run verify:artifacts && pnpm pack
 ```
 
-`scripts/verify-headless.mjs` arranca el perfil web real e imprime la salida exacta de `/mcp`. Publicación: `node scripts/release.mjs <x.y.z>` ejecuta la puerta completa, hace commit y etiqueta `v<x.y.z>` localmente (nunca empuja).
+`scripts/verify-headless.mjs` arranca el perfil web real e imprime la salida exacta de `/mcpw`. Publicación: `node scripts/release.mjs <x.y.z>` ejecuta la puerta completa, hace commit y etiqueta `v<x.y.z>` localmente (nunca empuja).
 
 ## Topics
 
@@ -314,7 +314,7 @@ Este proyecto forma parte de la familia de plugins de DeepSeek Harness de [Perry
 | **[dsh-local-ai](https://github.com/PerryLink/dsh-local-ai)** |  |
 | **[dsh-lsp-actions](https://github.com/PerryLink/dsh-lsp-actions)** |  |
 | **[dsh-mask](https://github.com/PerryLink/dsh-mask)** |  |
-| **[dsh-mcp-panel](https://github.com/PerryLink/dsh-mcp-panel)** |  |
+| **[dsh-mcp-workbench](https://github.com/PerryLink/dsh-mcp-panel)** |  |
 | **[dsh-medrec-qc](https://github.com/PerryLink/dsh-medrec-qc)** |  |
 | **[dsh-memento](https://github.com/PerryLink/dsh-memento)** |  |
 | **[dsh-nsfc-form-check](https://github.com/PerryLink/dsh-nsfc-form-check)** |  |
@@ -371,7 +371,7 @@ Este proyecto forma parte de la familia de plugins de DeepSeek Harness de [Perry
 
 ## License
 
-[Apache License 2.0](LICENSE) © 2026 colaboradores de dsh-mcp-panel
+[Apache License 2.0](LICENSE) © 2026 colaboradores de dsh-mcp-workbench
 
 ### Instalar desde el mercado de DSH Desktop
 

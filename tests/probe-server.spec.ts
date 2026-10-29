@@ -5,7 +5,7 @@
  * hang→timeout modes. No external network: the server listens on 127.0.0.1
  * only and is closed at the end of the suite.
  *
- * @module dsh-mcp-panel/test/probe-server.spec
+ * @module dsh-mcp-workbench/test/probe-server.spec
  */
 
 import { createServer, type Server } from 'node:http'

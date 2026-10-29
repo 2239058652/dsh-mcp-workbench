@@ -6,13 +6,13 @@
  * `!!js` expression — non-plain-JSON config is exported as `null` with a
  * reason instead of being silently corrupted.
  *
- * @module dsh-mcp-panel/config-io
+ * @module dsh-mcp-workbench/config-io
  */
 
 import { defaultEntryId, validateServerConfig, type McpServerConfigInput } from './patch.ts'
 
 /** Discriminator of the MCP config export document (version 1). */
-export const MCP_CONFIG_EXPORT_SCHEMA = 'dsh-mcp-panel/mcp-config@v1' as const
+export const MCP_CONFIG_EXPORT_SCHEMA = 'dsh-mcp-workbench/mcp-config@v1' as const
 
 /** One exported server row. */
 export interface McpConfigExportRow {
@@ -73,29 +73,29 @@ export function parseMcpConfigsImport(text: string): McpConfigImportRow[] {
   try {
     document = JSON.parse(text)
   } catch {
-    throw new Error('dsh-mcp-panel: import text is not valid JSON')
+    throw new Error('dsh-mcp-workbench: import text is not valid JSON')
   }
   if (typeof document !== 'object' || document === null || Array.isArray(document)) {
-    throw new Error('dsh-mcp-panel: import must be a JSON object')
+    throw new Error('dsh-mcp-workbench: import must be a JSON object')
   }
   const servers = (document as Record<string, unknown>)['servers']
   if (!Array.isArray(servers) || servers.length === 0) {
-    throw new Error('dsh-mcp-panel: import must carry a non-empty "servers" array')
+    throw new Error('dsh-mcp-workbench: import must carry a non-empty "servers" array')
   }
   const out: McpConfigImportRow[] = []
   for (let index = 0; index < servers.length; index += 1) {
     const entry = servers[index]
     if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
-      throw new Error(`dsh-mcp-panel: import servers[${index}] must be an object`)
+      throw new Error(`dsh-mcp-workbench: import servers[${index}] must be an object`)
     }
     const record = entry as Record<string, unknown>
     const config = record['config']
     if (config === null) {
-      throw new Error(`dsh-mcp-panel: import servers[${index}] has no config (exported as null)`)
+      throw new Error(`dsh-mcp-workbench: import servers[${index}] has no config (exported as null)`)
     }
     const validated = validateServerConfig(config)
     if (!validated.ok) {
-      throw new Error(`dsh-mcp-panel: import servers[${index}] invalid — ${validated.issues.map(issue => issue.text).join(' ')}`)
+      throw new Error(`dsh-mcp-workbench: import servers[${index}] invalid — ${validated.issues.map(issue => issue.text).join(' ')}`)
     }
     const entryId = typeof record['entryId'] === 'string' && record['entryId'] !== ''
       ? record['entryId']

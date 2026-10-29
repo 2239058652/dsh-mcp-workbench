@@ -2,7 +2,7 @@
  * Profile-write tests: append-only patches, timestamped backups, fresh-file
  * creation, and backup pruning — all against a real temp directory.
  *
- * @module dsh-mcp-panel/test/write.spec
+ * @module dsh-mcp-workbench/test/write.spec
  */
 
 import { mkdtemp, readFile, readdir, rmdir, unlink, writeFile } from 'node:fs/promises'
@@ -15,7 +15,7 @@ const FRAGMENT = "- insert:\n    - id: mcp-x\n      name: '@deepseek-ai/dsh-mcp-
 
 const dirs: string[] = []
 async function tempDir(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-panel-write-'))
+  const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-workbench-write-'))
   dirs.push(dir)
   return dir
 }
@@ -37,7 +37,7 @@ describe('appendPatchFragment', () => {
     const file = join(dir, 'cordis.patch.yml')
     const { backupPath, bytes } = await appendPatchFragment(file, FRAGMENT, 5)
     const content = await readFile(file, 'utf8')
-    expect(content).toContain('# dsh-mcp-panel managed patch layer')
+    expect(content).toContain('# dsh-mcp-workbench managed patch layer')
     expect(content).toContain('- insert:')
     expect(content).toContain("serverName: x")
     expect(bytes).toBeGreaterThan(0)

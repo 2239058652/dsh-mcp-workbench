@@ -4,7 +4,7 @@
  * upstream-vs-derived status merge, reconnect counting, URL sanitization
  * inside targets, and the wire-schema round trip.
  *
- * @module dsh-mcp-panel/test/aggregate.spec
+ * @module dsh-mcp-workbench/test/aggregate.spec
  */
 
 import { describe, expect, it } from 'vitest'

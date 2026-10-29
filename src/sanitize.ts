@@ -8,7 +8,7 @@
  * snapshot assembly); this module redacts what can still leak through target
  * URLs and error text.
  *
- * @module dsh-mcp-panel/sanitize
+ * @module dsh-mcp-workbench/sanitize
  */
 
 /** Replacement for every redacted credential value. */

@@ -34,7 +34,7 @@ export interface McpPanelTabInjected {
 
 /** Full component props assembled by the slot renderer (this is a `main` panel). */
 export type McpPanelTabProps =
-  PropsLocale<'settings.mcpPanel'>
+  PropsLocale<'settings.mcpWorkbench'>
   & InjectFace<McpPanelTabInjected>
 
 type ViewState =
@@ -670,7 +670,7 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
   }
 
   return (
-    <div className="dmcp-page" data-dsh-mcp-panel="" aria-busy={state.status === 'loading'}>
+    <div className="dmcp-page" data-dsh-mcp-workbench="" aria-busy={state.status === 'loading'}>
       <header className="dmcp-page-head">
         <h2 className="dmcp-page-title">{t('servers')}</h2>
         <div className="dmcp-head-actions">

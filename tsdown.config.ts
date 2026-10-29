@@ -1,8 +1,8 @@
 /**
- * Build faces for dsh-mcp-panel. The node half (src/index.ts + the
+ * Build faces for dsh-mcp-workbench. The node half (src/index.ts + the
  * hand-written Typert host manifest src/typert.host.ts) is the host Loader
  * entry; the browser half (src/client/index.ts) is the client bundle the
- * client-modules node half serves under /plugins/dsh-mcp-panel/client.js.
+ * client-modules node half serves under /plugins/dsh-mcp-workbench/client.js.
  *
  * The browser half follows the shell's client-bundle handshake exactly: a
  * CJS bundle wrapped in `window.__ModuleLoader__.load({ id, factory })`,
@@ -17,7 +17,7 @@
 import { defineConfig } from 'tsdown'
 
 /** Plugin id: the cordis.yml bare row name, the graph row id, and the stamped bundle id must all match. */
-const PLUGIN_ID = 'dsh-mcp-panel'
+const PLUGIN_ID = 'dsh-mcp-workbench'
 
 /**
  * Module specifiers the shell shares into the frozen browser module table

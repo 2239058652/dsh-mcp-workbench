@@ -2,7 +2,7 @@
  * Community MCP server catalog: the built-in directory is non-empty and every
  * entry validates, the user overlay overrides by id and appends new entries,
  * and catalog entries convert into editor `add` config inputs.
- * @module dsh-mcp-panel/test/catalog.spec
+ * @module dsh-mcp-workbench/test/catalog.spec
  */
 
 import { describe, expect, it } from 'vitest'

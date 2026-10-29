@@ -3,7 +3,7 @@
  * (default) and Simplified Chinese (`outputLanguage: 'zh'`), and the patch
  * suggestion line itself stays machine-identical across languages.
  *
- * @module dsh-mcp-panel/test/command-i18n.spec
+ * @module dsh-mcp-workbench/test/command-i18n.spec
  */
 
 import { describe, expect, it } from 'vitest'

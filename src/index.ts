@@ -1,11 +1,11 @@
 /**
- * `dsh-mcp-panel` — the MCP management console for the official DeepSeek
+ * `dsh-mcp-workbench` — the MCP management console for the official DeepSeek
  * Harness MCP client (`@deepseek-ai/dsh-mcp-client`).
  *
  * The official client stays the ONLY bridge — one plugin instance per MCP
  * server in the profile's composition. This plugin is its experience layer:
  *
- * - the `mcpPanel` Remote service: status snapshot (loader rows + tool
+ * - the `mcpWorkbench` Remote service: status snapshot (loader rows + tool
  *   registry + the shipped upstream `mcp/status` seam), plus the console
  *   actions `previewPatch` / `writePatch` (append-only profile-patch CRUD
  *   with approval gate + automatic backups) and `callTool` (a tool trial
@@ -26,7 +26,7 @@
  * Function plugin — no default export (the Loader unwraps
  * `exports.default ?? exports`).
  *
- * @module dsh-mcp-panel
+ * @module dsh-mcp-workbench
  */
 
 import type { Context } from '@deepseek-ai/cordis'
@@ -40,8 +40,8 @@ import { McpPanelService } from './service.ts'
 import { DEFAULT_CATALOG, mergeCatalog } from './catalog.ts'
 import { MCP_STATUS_EVENT, type McpStatusQuery } from './upstream.ts'
 
-// Service Definition — the panel contract: McpPanelService (Remote namespace mcpPanel), the snapshot wire schema, and the config schema.
-export const name = 'mcp-panel'
+// Service Definition — the panel contract: McpPanelService (Remote namespace mcpWorkbench), the snapshot wire schema, and the config schema.
+export const name = 'mcp-workbench'
 
 /** Hard services: the facts the console reads. `commands`/`jobs` are optional children. */
 export const inject = ['tools', 'loader']
@@ -110,7 +110,7 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
   // registration now would either throw INACTIVE_EFFECT or leak into a dead
   // fiber (a remount runs this whole path again).
   if (ctx.fiber.uid === null) return
-  const service = ctx.get('mcpPanel') as McpPanelService
+  const service = ctx.get('mcpWorkbench') as McpPanelService
 
   // Consumer — consumes the shipped mcp/status seam (live events + one-shot query seed) and feeds observations to the panel service.
   // Consume the shipped upstream seam: live events plus a one-shot query
@@ -123,14 +123,14 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
 
   // The /mcp command: only where a human-command registry is composed.
   ctx.inject(['commands'], (scope) => {
-    scope.effect(() => scope.commands.register(mcpCommand(service, resolved.outputLanguage)), 'dsh-mcp-panel: /mcp command')
+    scope.effect(() => scope.commands.register(mcpCommand(service, resolved.outputLanguage)), 'dsh-mcp-workbench: /mcp command')
   })
 
   // The jobs controller serves the panel probe action AND the optional tool.
   ctx.inject(['jobs'], (scope) => {
-    scope.effect(() => scope.jobs.attachController('dsh-mcp-panel'), 'dsh-mcp-panel: jobs controller')
+    scope.effect(() => scope.jobs.attachController('dsh-mcp-workbench'), 'dsh-mcp-workbench: jobs controller')
     if (resolved.probeEnabled) {
-      scope.effect(() => scope.tools.register(mcpProbeTool(service, scope.jobs, resolved.probeTimeoutMs)), 'dsh-mcp-panel: probe tool')
+      scope.effect(() => scope.tools.register(mcpProbeTool(service, scope.jobs, resolved.probeTimeoutMs)), 'dsh-mcp-workbench: probe tool')
     }
   })
 }

@@ -4,7 +4,7 @@
  * Schemastery normalization still fails loud instead of running with hidden
  * defaults (the explicit-resolve contract).
  *
- * @module dsh-mcp-panel/config
+ * @module dsh-mcp-workbench/config
  */
 
 import z from '@deepseek-ai/schemastery'
@@ -150,64 +150,64 @@ export const Config: z<Config> = z.object({
 export function resolveConfig(config: Config | undefined): ResolvedConfig {
   const probeEnabled = config?.probeEnabled ?? true
   if (typeof probeEnabled !== 'boolean') {
-    throw new TypeError('dsh-mcp-panel: config.probeEnabled must be a boolean')
+    throw new TypeError('dsh-mcp-workbench: config.probeEnabled must be a boolean')
   }
   const probeTimeoutMs = config?.probeTimeoutMs ?? DEFAULT_PROBE_TIMEOUT_MS
   if (!Number.isFinite(probeTimeoutMs) || probeTimeoutMs < 1 || probeTimeoutMs > MAX_PROBE_TIMEOUT_MS) {
-    throw new Error(`dsh-mcp-panel: config.probeTimeoutMs must be a finite number between 1 and ${MAX_PROBE_TIMEOUT_MS}`)
+    throw new Error(`dsh-mcp-workbench: config.probeTimeoutMs must be a finite number between 1 and ${MAX_PROBE_TIMEOUT_MS}`)
   }
   const maxProbes = config?.maxProbes ?? DEFAULT_MAX_PROBES
   if (!Number.isInteger(maxProbes) || maxProbes < 1 || maxProbes > 100) {
-    throw new Error('dsh-mcp-panel: config.maxProbes must be an integer between 1 and 100')
+    throw new Error('dsh-mcp-workbench: config.maxProbes must be an integer between 1 and 100')
   }
   const refreshIntervalMs = config?.refreshIntervalMs ?? 0
   if (!Number.isFinite(refreshIntervalMs) || refreshIntervalMs < 0 || refreshIntervalMs > MAX_REFRESH_INTERVAL_MS) {
-    throw new Error(`dsh-mcp-panel: config.refreshIntervalMs must be a finite number between 0 and ${MAX_REFRESH_INTERVAL_MS}`)
+    throw new Error(`dsh-mcp-workbench: config.refreshIntervalMs must be a finite number between 0 and ${MAX_REFRESH_INTERVAL_MS}`)
   }
   const outputLanguage = config?.outputLanguage ?? 'en'
   if (outputLanguage !== 'en' && outputLanguage !== 'zh' && outputLanguage !== 'es' && outputLanguage !== 'pt' && outputLanguage !== 'hi') {
-    throw new Error(`dsh-mcp-panel: config.outputLanguage must be one of "en", "zh", "es", "pt", "hi", got ${JSON.stringify(outputLanguage)}`)
+    throw new Error(`dsh-mcp-workbench: config.outputLanguage must be one of "en", "zh", "es", "pt", "hi", got ${JSON.stringify(outputLanguage)}`)
   }
   const passiveProbeEnabled = config?.passiveProbeEnabled ?? false
   if (typeof passiveProbeEnabled !== 'boolean') {
-    throw new TypeError('dsh-mcp-panel: config.passiveProbeEnabled must be a boolean')
+    throw new TypeError('dsh-mcp-workbench: config.passiveProbeEnabled must be a boolean')
   }
   const passiveProbeIntervalMs = config?.passiveProbeIntervalMs ?? 60_000
   if (!Number.isFinite(passiveProbeIntervalMs) || passiveProbeIntervalMs < 1_000 || passiveProbeIntervalMs > MAX_REFRESH_INTERVAL_MS) {
-    throw new Error(`dsh-mcp-panel: config.passiveProbeIntervalMs must be a finite number between 1000 and ${MAX_REFRESH_INTERVAL_MS}`)
+    throw new Error(`dsh-mcp-workbench: config.passiveProbeIntervalMs must be a finite number between 1000 and ${MAX_REFRESH_INTERVAL_MS}`)
   }
   const trialEnabled = config?.trialEnabled ?? DEFAULT_TRIAL_ENABLED
   if (typeof trialEnabled !== 'boolean') {
-    throw new TypeError('dsh-mcp-panel: config.trialEnabled must be a boolean')
+    throw new TypeError('dsh-mcp-workbench: config.trialEnabled must be a boolean')
   }
   const trialTimeoutMs = config?.trialTimeoutMs ?? DEFAULT_TRIAL_TIMEOUT_MS
   if (!Number.isFinite(trialTimeoutMs) || trialTimeoutMs < 1 || trialTimeoutMs > MAX_TRIAL_TIMEOUT_MS) {
-    throw new Error(`dsh-mcp-panel: config.trialTimeoutMs must be a finite number between 1 and ${MAX_TRIAL_TIMEOUT_MS}`)
+    throw new Error(`dsh-mcp-workbench: config.trialTimeoutMs must be a finite number between 1 and ${MAX_TRIAL_TIMEOUT_MS}`)
   }
   const trialMaxResultChars = config?.trialMaxResultChars ?? DEFAULT_TRIAL_MAX_RESULT_CHARS
   if (!Number.isInteger(trialMaxResultChars) || trialMaxResultChars < 1_000 || trialMaxResultChars > MAX_TRIAL_RESULT_CHARS) {
-    throw new Error(`dsh-mcp-panel: config.trialMaxResultChars must be an integer between 1000 and ${MAX_TRIAL_RESULT_CHARS}`)
+    throw new Error(`dsh-mcp-workbench: config.trialMaxResultChars must be an integer between 1000 and ${MAX_TRIAL_RESULT_CHARS}`)
   }
   const writeEnabled = config?.writeEnabled ?? DEFAULT_WRITE_ENABLED
   if (typeof writeEnabled !== 'boolean') {
-    throw new TypeError('dsh-mcp-panel: config.writeEnabled must be a boolean')
+    throw new TypeError('dsh-mcp-workbench: config.writeEnabled must be a boolean')
   }
   const writeVerifyEnabled = config?.writeVerifyEnabled ?? true
   if (typeof writeVerifyEnabled !== 'boolean') {
-    throw new TypeError('dsh-mcp-panel: config.writeVerifyEnabled must be a boolean')
+    throw new TypeError('dsh-mcp-workbench: config.writeVerifyEnabled must be a boolean')
   }
   const writeVerifyTimeoutMs = config?.writeVerifyTimeoutMs ?? 3_000
   if (!Number.isInteger(writeVerifyTimeoutMs) || writeVerifyTimeoutMs < 100 || writeVerifyTimeoutMs > 30_000) {
-    throw new Error('dsh-mcp-panel: config.writeVerifyTimeoutMs must be an integer between 100 and 30000')
+    throw new Error('dsh-mcp-workbench: config.writeVerifyTimeoutMs must be an integer between 100 and 30000')
   }
   const backupCount = config?.backupCount ?? DEFAULT_BACKUP_COUNT
   if (!Number.isInteger(backupCount) || backupCount < 1 || backupCount > MAX_BACKUP_COUNT) {
-    throw new Error(`dsh-mcp-panel: config.backupCount must be an integer between 1 and ${MAX_BACKUP_COUNT}`)
+    throw new Error(`dsh-mcp-workbench: config.backupCount must be an integer between 1 and ${MAX_BACKUP_COUNT}`)
   }
   const catalogOverlay = config?.catalogEntries ?? []
   const catalogIssues = catalogOverlayIssues(catalogOverlay)
   if (catalogIssues.length > 0) {
-    throw new Error(`dsh-mcp-panel: config.catalogEntries invalid — ${catalogIssues.map(issue => `${issue.field}: ${issue.text}`).join(' ')}`)
+    throw new Error(`dsh-mcp-workbench: config.catalogEntries invalid — ${catalogIssues.map(issue => `${issue.field}: ${issue.text}`).join(' ')}`)
   }
   const catalogEntries = catalogOverlay as CatalogEntry[]
   return Object.freeze({

@@ -5,7 +5,7 @@
  * Localization happens in the component through the locale dictionaries;
  * this module emits stable codes only.
  *
- * @module dsh-mcp-panel/client/present
+ * @module dsh-mcp-workbench/client/present
  */
 
 import type { McpPanelSnapshot, McpServerView, McpProbeView } from '../wire.ts'
@@ -125,7 +125,7 @@ export function probeBadge(status: McpProbeView['status']): { badge: PresentedPr
 /**
  * Project the wire snapshot onto render-ready rows.
  *
- * @param snapshot - the `mcpPanel/status` value.
+ * @param snapshot - the `mcpWorkbench/status` value.
  * @param now - epoch ms anchor for age computations (keeps the fold pure).
  * @returns the tab model.
  */

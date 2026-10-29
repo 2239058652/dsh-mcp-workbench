@@ -1,6 +1,6 @@
 /**
  * The console's host service: assembles the MCP snapshot and serves it under
- * the `mcpPanel` Typert Remote namespace (`mcpPanel/status`), plus the three
+ * the `mcpWorkbench` Typert Remote namespace (`mcpWorkbench/status`), plus the three
  * console actions — `previewPatch` (render a CRUD operation),
  * `writePatch` (approval-gated append to the profile patch layer, with
  * automatic backup), and `callTool` (a tool trial through the OFFICIAL
@@ -22,7 +22,7 @@
  * passes; every write first copies the current patch layer to a timestamped
  * backup (see `src/write.ts`).
  *
- * @module dsh-mcp-panel/service
+ * @module dsh-mcp-workbench/service
  */
 
 import { join } from 'node:path'
@@ -71,7 +71,7 @@ import type {
 declare module '@deepseek-ai/cordis' {
   interface Context {
     /** MCP management console snapshot + actions service (this package). */
-    mcpPanel: McpPanelService
+    mcpWorkbench: McpPanelService
   }
 }
 
@@ -98,7 +98,7 @@ const PROBE_LABEL_PREFIX = 'mcp_probe '
  * Supervisor phases this panel understands. Upstream payloads are
  * unvalidated runtime data (any plugin can emit `mcp/status`): a payload
  * whose required fields do not match the wire codec would otherwise be
- * stored verbatim and later REJECT the whole `mcpPanel/status` snapshot on
+ * stored verbatim and later REJECT the whole `mcpWorkbench/status` snapshot on
  * the strict Typert codec, taking down the panel over one bad event.
  */
 const KNOWN_PHASES: ReadonlySet<string> = new Set(['connecting', 'connected', 'waiting', 'exhausted', 'disposed'])
@@ -192,7 +192,7 @@ function isAgentRunning(agent: unknown): boolean {
   }
 }
 
-/** MCP management console service, exported over the `mcpPanel` Remote namespace. */
+/** MCP management console service, exported over the `mcpWorkbench` Remote namespace. */
 export class McpPanelService extends TypertRemoteService {
   static inject = ['loader', 'tools']
 
@@ -221,12 +221,12 @@ private readonly trialCaller = createTrialCaller()
    * @param config - resolved runtime settings; defaults apply for direct construction.
    */
   constructor(ctx: Context, private readonly config: McpPanelServiceConfig = DEFAULT_SERVICE_CONFIG) {
-    super(ctx, 'mcpPanel')
+    super(ctx, 'mcpWorkbench')
     if (config.passiveProbeEnabled) {
       const timer = setInterval(() => { void this.runPassiveProbes() }, config.passiveProbeIntervalMs)
       // An armed probe timer must never hold the process open on its own.
       timer.unref?.()
-      ctx.effect(() => () => { clearInterval(timer) }, 'dsh-mcp-panel: passive probe loop')
+      ctx.effect(() => () => { clearInterval(timer) }, 'dsh-mcp-workbench: passive probe loop')
     }
   }
 
@@ -278,7 +278,7 @@ private readonly trialCaller = createTrialCaller()
 
   /**
    * Assemble the current snapshot. Read-only: touches no configuration file
-   * and mutates no registry. Exported on the wire by the `mcpPanel/status`
+   * and mutates no registry. Exported on the wire by the `mcpWorkbench/status`
    * invocation descriptor in `./wire.ts` (registered through the package's
    * `./typert` manifest) — no method decorator, so the built bundle stays
    * plain ESM.
@@ -342,7 +342,7 @@ private readonly trialCaller = createTrialCaller()
    * Start a one-shot connectivity probe of one configured MCP server
    * (streamable-http or stdio) as an UNOWNED background job — panel-only,
    * like the `mcp_probe` tool, but callable from the settings tab. Exported
-   * on the wire by the `mcpPanel/probe` invocation descriptor.
+   * on the wire by the `mcpWorkbench/probe` invocation descriptor.
    *
    * @param serverName - configured namespace.
    * @returns the started job id and where the result lands.
@@ -350,11 +350,11 @@ private readonly trialCaller = createTrialCaller()
   probe(serverName: string): ProbeStarted {
     const target = this.probeSpec(serverName)
     if (target === undefined) {
-      throw new Error(`dsh-mcp-panel: "${serverName}" is not a configured MCP server (streamable-http or stdio)`)
+      throw new Error(`dsh-mcp-workbench: "${serverName}" is not a configured MCP server (streamable-http or stdio)`)
     }
     const jobs = this.ctx.get('jobs')
     if (jobs === undefined) {
-      throw new Error('dsh-mcp-panel: ctx.jobs is not composed — the panel probe action needs a background-job registry')
+      throw new Error('dsh-mcp-workbench: ctx.jobs is not composed — the panel probe action needs a background-job registry')
     }
     const jobId = jobs.start({
       kind: PROBE_KIND,
@@ -370,7 +370,7 @@ private readonly trialCaller = createTrialCaller()
 
   /**
    * Render one CRUD operation as its append-only patch fragment WITHOUT
-   * touching any file. Exported by `mcpPanel/previewPatch`; the editor uses
+   * touching any file. Exported by `mcpWorkbench/previewPatch`; the editor uses
    * it for the copy-to-clipboard path and the confirm review.
    *
    * @param opJson - JSON of the operation (add / edit / disable / enable).
@@ -407,11 +407,11 @@ private readonly trialCaller = createTrialCaller()
    */
   async writePatch(opJson: string, confirmed: boolean, sessionId: string | undefined): Promise<PatchWriteResult> {
     if (!this.config.writeEnabled) {
-      throw new Error('dsh-mcp-panel: profile writes are disabled (config.writeEnabled: false) — flip the kill switch or edit the file by hand')
+      throw new Error('dsh-mcp-workbench: profile writes are disabled (config.writeEnabled: false) — flip the kill switch or edit the file by hand')
     }
     const file = this.patchFile()
     if (file === null) {
-      throw new Error('dsh-mcp-panel: the profile patch path is unknown (no ctx.baseUrl) — cannot write')
+      throw new Error('dsh-mcp-workbench: the profile patch path is unknown (no ctx.baseUrl) — cannot write')
     }
     const resolution = this.resolveOp(opJson)
     if (!resolution.ok) throw this.issueError(resolution)
@@ -424,22 +424,22 @@ private readonly trialCaller = createTrialCaller()
     if (approval !== undefined && agent !== undefined && isAgentRunning(agent)) {
       const outcome = await approval.request({
         agent,
-        toolName: 'mcp-panel/writePatch',
-        reason: `append a dsh-mcp-panel operation (${resolution.op.kind}) to the profile patch layer`,
+        toolName: 'mcp-workbench/writePatch',
+        reason: `append a dsh-mcp-workbench operation (${resolution.op.kind}) to the profile patch layer`,
       })
       if (outcome === ALLOWED_ONCE) {
         approvalPath = 'harness-approval'
       } else if (outcome === 'rejected') {
-        throw new Error('dsh-mcp-panel: the profile write was rejected')
+        throw new Error('dsh-mcp-workbench: the profile write was rejected')
       } else if (outcome === 'cancelled') {
-        throw new Error('dsh-mcp-panel: approval for the profile write was cancelled')
+        throw new Error('dsh-mcp-workbench: approval for the profile write was cancelled')
       } else {
-        throw new Error('dsh-mcp-panel: no approval channel is available for the profile write')
+        throw new Error('dsh-mcp-workbench: no approval channel is available for the profile write')
       }
     }
     if (approvalPath === null) {
       if (confirmed !== true) {
-        throw new Error('dsh-mcp-panel: the profile write needs confirmation — review the fragment and confirm in the console')
+        throw new Error('dsh-mcp-workbench: the profile write needs confirmation — review the fragment and confirm in the console')
       }
       approvalPath = 'interactive-confirmation'
     }
@@ -468,7 +468,7 @@ private readonly trialCaller = createTrialCaller()
    * Run one `mcp__*` tool through the OFFICIAL pipeline
    * (`ctx.tools.execute`): pre-execute permission policy, approval asks,
    * guards, the tool body, and post-execute all apply exactly as for model
-   * calls. Exported by `mcpPanel/callTool`; results are panel-only and never
+   * calls. Exported by `mcpWorkbench/callTool`; results are panel-only and never
    * enter model context.
    *
    * @param requestJson - JSON of `{ serverName, toolName, argsJson }`.
@@ -477,16 +477,16 @@ private readonly trialCaller = createTrialCaller()
    */
   async callTool(requestJson: string, sessionId: string | undefined): Promise<McpTrialResultWire> {
     if (!this.config.trialEnabled) {
-      throw new Error('dsh-mcp-panel: the tool trial console is disabled (config.trialEnabled: false)')
+      throw new Error('dsh-mcp-workbench: the tool trial console is disabled (config.trialEnabled: false)')
     }
     let request: unknown
     try {
       request = JSON.parse(requestJson)
     } catch {
-      throw new Error('dsh-mcp-panel: requestJson is not valid JSON')
+      throw new Error('dsh-mcp-workbench: requestJson is not valid JSON')
     }
     const problem = validateTrialRequest(request)
-    if (problem !== null) throw new Error(`dsh-mcp-panel: ${problem}`)
+    if (problem !== null) throw new Error(`dsh-mcp-workbench: ${problem}`)
     return this.trialCaller.runTrialCall(
       this.ctx.tools,
       agentsOf(this.ctx),
@@ -533,7 +533,7 @@ private readonly trialCaller = createTrialCaller()
     try {
       op = JSON.parse(opJson)
     } catch {
-      throw new Error('dsh-mcp-panel: opJson is not valid JSON')
+      throw new Error('dsh-mcp-workbench: opJson is not valid JSON')
     }
     const rawFor = new Map<string, unknown>()
     const viewFor = new Map<string, ReturnType<typeof configViewOf>>()
@@ -550,7 +550,7 @@ private readonly trialCaller = createTrialCaller()
 
   /** Render validation issues as one actionable error. */
   private issueError(resolution: Extract<McpPatchResolution, { ok: false }>): Error {
-    return new Error(`dsh-mcp-panel: invalid patch operation — ${resolution.issues.map(issue => issue.text).join(' ')}`)
+    return new Error(`dsh-mcp-workbench: invalid patch operation — ${resolution.issues.map(issue => issue.text).join(' ')}`)
   }
 
   /**
@@ -564,14 +564,14 @@ private readonly trialCaller = createTrialCaller()
    */
   async reload(serverName: string): Promise<ReloadResult> {
     const wanted = serverName.trim()
-    if (wanted === '') throw new Error('dsh-mcp-panel: reload requires a serverName')
+    if (wanted === '') throw new Error('dsh-mcp-workbench: reload requires a serverName')
     for (const entry of this.ctx.loader.entries()) {
       if (entry.options.name !== MCP_CLIENT_MODULE) continue
       const config = entry.options.config as { serverName?: unknown } | undefined
       const name = typeof config?.serverName === 'string' ? config.serverName : entry.options.id
       if (name !== wanted) continue
       if (entry.disabled) {
-        throw new Error(`dsh-mcp-panel: "${wanted}" is disabled — enable the row before reconnecting`)
+        throw new Error(`dsh-mcp-workbench: "${wanted}" is disabled — enable the row before reconnecting`)
       }
       entry.fiber?.dispose()
       await entry.init()
@@ -581,7 +581,7 @@ private readonly trialCaller = createTrialCaller()
         note: 'The row was restarted; its tools re-sync after the new handshake.',
       }
     }
-    throw new Error(`dsh-mcp-panel: no mcp-client row for "${wanted}" (a leftover namespace has nothing to restart)`)
+    throw new Error(`dsh-mcp-workbench: no mcp-client row for "${wanted}" (a leftover namespace has nothing to restart)`)
   }
 
   /** The loader row for one entry id, or undefined when absent or foreign. */
@@ -610,7 +610,7 @@ private readonly trialCaller = createTrialCaller()
       if (this.writeVerified(op)) return
       if (Date.now() >= deadline) {
         throw new Error(
-          `dsh-mcp-panel: the fragment was appended (backup kept), but the loader did not apply it within ${budgetMs}ms — `
+          `dsh-mcp-workbench: the fragment was appended (backup kept), but the loader did not apply it within ${budgetMs}ms — `
           + 'the row may live in a layer a profile patch cannot reach (e.g. inserted by $DSH_HOME/cordis.patch.yml), '
           + 'or the patch was skipped; inspect with dsh --profile web --dump-config',
         )

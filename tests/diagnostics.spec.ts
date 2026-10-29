@@ -3,7 +3,7 @@
  * suggestion codes, budget/phase facts add lifecycle suggestions, and absent
  * facts produce no fabricated diagnosis.
  *
- * @module dsh-mcp-panel/test/diagnostics.spec
+ * @module dsh-mcp-workbench/test/diagnostics.spec
  */
 
 import { describe, expect, it } from 'vitest'

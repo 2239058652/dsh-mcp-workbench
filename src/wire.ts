@@ -1,6 +1,6 @@
 /**
  * The console's wire vocabulary: the snapshot types served over the
- * `mcpPanel` Remote namespace, their zod v4 validation schema (the strict
+ * `mcpWorkbench` Remote namespace, their zod v4 validation schema (the strict
  * codec both Typert faces carry), and the invocation descriptors shared
  * verbatim by the host `./typert` manifest (`src/typert.host.ts`) and the
  * client Remote contribution (`src/client/remote.ts`). One canonical source
@@ -9,7 +9,7 @@
  * Values that could be large or heterogeneous (trial results) cross the wire
  * as single bounded JSON strings; every scalar here has an explicit shape.
  *
- * @module dsh-mcp-panel/wire
+ * @module dsh-mcp-workbench/wire
  */
 
 import { z } from 'zod'
@@ -175,7 +175,7 @@ export interface McpCatalogEntryView {
   tags?: readonly string[]
 }
 
-/** The complete panel snapshot served by `mcpPanel/status`. */
+/** The complete panel snapshot served by `mcpWorkbench/status`. */
 export interface McpPanelSnapshot {
   /** True when the upstream `mcp/status` seam produced data this process. */
   observed: boolean
@@ -307,24 +307,24 @@ function strictCodec(typeSymbol: string, schema: z.ZodType): {
 }
 
 /**
- * The `mcpPanel/status` invocation descriptor, shared verbatim by the host
+ * The `mcpWorkbench/status` invocation descriptor, shared verbatim by the host
  * `TYPERT` manifest (`src/typert.host.ts`) and the client
  * `TypertRemoteContribution` (`src/client/remote.ts`). Hand-written in the
  * exact shape the Typert generator emits; validated by the typert loader and
  * the client registry at mount time.
  */
 export const MCP_PANEL_STATUS_DESCRIPTOR = Object.freeze({
-  id: 'dsh-mcp-panel#mcpPanel/status',
-  service: 'mcpPanel',
-  namespace: 'mcpPanel',
+  id: 'dsh-mcp-workbench#mcpWorkbench/status',
+  service: 'mcpWorkbench',
+  namespace: 'mcpWorkbench',
   method: 'status',
   invocation: Object.freeze({ kind: 'direct' }),
   parameters: Object.freeze([]),
-  result: Object.freeze(strictCodec('dsh-mcp-panel/types#McpPanelSnapshot', MCP_PANEL_SNAPSHOT_SCHEMA)),
+  result: Object.freeze(strictCodec('dsh-mcp-workbench/types#McpPanelSnapshot', MCP_PANEL_SNAPSHOT_SCHEMA)),
   sourceLocation: Object.freeze({ file: 'src/wire.ts', line: 1, column: 1 }),
 } as const) satisfies InvocationDescriptor
 
-/** Result of the `mcpPanel/probe` invocation: a started panel-only probe. */
+/** Result of the `mcpWorkbench/probe` invocation: a started panel-only probe. */
 export interface ProbeStarted {
   /** Background-job id (`mcp-probe-N`). */
   jobId: string
@@ -339,26 +339,26 @@ export const PROBE_STARTED_SCHEMA = z.object({
 })
 
 /**
- * The `mcpPanel/probe` invocation descriptor: start a one-shot probe from the
+ * The `mcpWorkbench/probe` invocation descriptor: start a one-shot probe from the
  * settings panel (same background-job mechanics as the `mcp_probe` tool).
  */
 export const MCP_PANEL_PROBE_DESCRIPTOR = Object.freeze({
-  id: 'dsh-mcp-panel#mcpPanel/probe',
-  service: 'mcpPanel',
-  namespace: 'mcpPanel',
+  id: 'dsh-mcp-workbench#mcpWorkbench/probe',
+  service: 'mcpWorkbench',
+  namespace: 'mcpWorkbench',
   method: 'probe',
   invocation: Object.freeze({ kind: 'direct' }),
   parameters: Object.freeze([Object.freeze({
     name: 'serverName',
     wire: 'serverName',
     source: 'json',
-    codec: strictCodec('dsh-mcp-panel/types#ProbeRequestServerName', z.string()),
+    codec: strictCodec('dsh-mcp-workbench/types#ProbeRequestServerName', z.string()),
   } satisfies InvocationDescriptor['parameters'][number])]),
-  result: strictCodec('dsh-mcp-panel/types#ProbeStarted', PROBE_STARTED_SCHEMA),
+  result: strictCodec('dsh-mcp-workbench/types#ProbeStarted', PROBE_STARTED_SCHEMA),
   sourceLocation: Object.freeze({ file: 'src/wire.ts', line: 1, column: 1 }),
 } as const) satisfies InvocationDescriptor
 
-/** Result of `mcpPanel/previewPatch`: the generated fragment before any write. */
+/** Result of `mcpWorkbench/previewPatch`: the generated fragment before any write. */
 export interface PatchPreview {
   /** The generated YAML block (append-only operation). */
   fragment: string
@@ -375,24 +375,24 @@ export const PATCH_PREVIEW_SCHEMA = z.object({
   ops: z.number().int(),
 })
 
-/** The `mcpPanel/previewPatch` invocation descriptor: render one CRUD op. */
+/** The `mcpWorkbench/previewPatch` invocation descriptor: render one CRUD op. */
 export const MCP_PANEL_PREVIEW_DESCRIPTOR = Object.freeze({
-  id: 'dsh-mcp-panel#mcpPanel/previewPatch',
-  service: 'mcpPanel',
-  namespace: 'mcpPanel',
+  id: 'dsh-mcp-workbench#mcpWorkbench/previewPatch',
+  service: 'mcpWorkbench',
+  namespace: 'mcpWorkbench',
   method: 'previewPatch',
   invocation: Object.freeze({ kind: 'direct' }),
   parameters: Object.freeze([Object.freeze({
     name: 'opJson',
     wire: 'opJson',
     source: 'json',
-    codec: strictCodec('dsh-mcp-panel/types#PatchOpJson', z.string()),
+    codec: strictCodec('dsh-mcp-workbench/types#PatchOpJson', z.string()),
   } satisfies InvocationDescriptor['parameters'][number])]),
-  result: strictCodec('dsh-mcp-panel/types#PatchPreview', PATCH_PREVIEW_SCHEMA),
+  result: strictCodec('dsh-mcp-workbench/types#PatchPreview', PATCH_PREVIEW_SCHEMA),
   sourceLocation: Object.freeze({ file: 'src/wire.ts', line: 1, column: 1 }),
 } as const) satisfies InvocationDescriptor
 
-/** Result of `mcpPanel/writePatch`: the applied append, with audit facts. */
+/** Result of `mcpWorkbench/writePatch`: the applied append, with audit facts. */
 export interface PatchWriteResult {
   /** Absolute file the fragment was appended to. */
   file: string
@@ -418,11 +418,11 @@ export const PATCH_WRITE_RESULT_SCHEMA = z.object({
   note: z.string(),
 })
 
-/** The `mcpPanel/writePatch` invocation descriptor: approval-gated append. */
+/** The `mcpWorkbench/writePatch` invocation descriptor: approval-gated append. */
 export const MCP_PANEL_WRITE_DESCRIPTOR = Object.freeze({
-  id: 'dsh-mcp-panel#mcpPanel/writePatch',
-  service: 'mcpPanel',
-  namespace: 'mcpPanel',
+  id: 'dsh-mcp-workbench#mcpWorkbench/writePatch',
+  service: 'mcpWorkbench',
+  namespace: 'mcpWorkbench',
   method: 'writePatch',
   invocation: Object.freeze({ kind: 'direct' }),
   parameters: Object.freeze([
@@ -430,27 +430,27 @@ export const MCP_PANEL_WRITE_DESCRIPTOR = Object.freeze({
       name: 'opJson',
       wire: 'opJson',
       source: 'json',
-      codec: strictCodec('dsh-mcp-panel/types#PatchOpJson', z.string()),
+      codec: strictCodec('dsh-mcp-workbench/types#PatchOpJson', z.string()),
     } satisfies InvocationDescriptor['parameters'][number]),
     Object.freeze({
       name: 'confirmed',
       wire: 'confirmed',
       source: 'json',
-      codec: strictCodec('dsh-mcp-panel/types#PatchWriteConfirmed', z.boolean()),
+      codec: strictCodec('dsh-mcp-workbench/types#PatchWriteConfirmed', z.boolean()),
     } satisfies InvocationDescriptor['parameters'][number]),
     Object.freeze({
       name: 'sessionId',
       wire: 'sessionId',
       source: 'json',
-      codec: strictCodec('dsh-mcp-panel/types#PatchWriteSessionId', z.string()),
+      codec: strictCodec('dsh-mcp-workbench/types#PatchWriteSessionId', z.string()),
       acceptsUndefined: true,
     } satisfies InvocationDescriptor['parameters'][number]),
   ]),
-  result: strictCodec('dsh-mcp-panel/types#PatchWriteResult', PATCH_WRITE_RESULT_SCHEMA),
+  result: strictCodec('dsh-mcp-workbench/types#PatchWriteResult', PATCH_WRITE_RESULT_SCHEMA),
   sourceLocation: Object.freeze({ file: 'src/wire.ts', line: 1, column: 1 }),
 } as const) satisfies InvocationDescriptor
 
-/** Result of `mcpPanel/callTool`: one trial call through the official pipeline. */
+/** Result of `mcpWorkbench/callTool`: one trial call through the official pipeline. */
 export interface McpTrialResultWire {
   /** Panel-assigned correlation id. */
   callId: string
@@ -473,11 +473,11 @@ export const MCP_TRIAL_RESULT_SCHEMA = z.object({
   resultJson: z.string(),
 })
 
-/** The `mcpPanel/callTool` invocation descriptor: official-pipeline trial call. */
+/** The `mcpWorkbench/callTool` invocation descriptor: official-pipeline trial call. */
 export const MCP_PANEL_CALLTOOL_DESCRIPTOR = Object.freeze({
-  id: 'dsh-mcp-panel#mcpPanel/callTool',
-  service: 'mcpPanel',
-  namespace: 'mcpPanel',
+  id: 'dsh-mcp-workbench#mcpWorkbench/callTool',
+  service: 'mcpWorkbench',
+  namespace: 'mcpWorkbench',
   method: 'callTool',
   invocation: Object.freeze({ kind: 'direct' }),
   parameters: Object.freeze([
@@ -485,21 +485,21 @@ export const MCP_PANEL_CALLTOOL_DESCRIPTOR = Object.freeze({
       name: 'requestJson',
       wire: 'requestJson',
       source: 'json',
-      codec: strictCodec('dsh-mcp-panel/types#TrialRequestJson', z.string()),
+      codec: strictCodec('dsh-mcp-workbench/types#TrialRequestJson', z.string()),
     } satisfies InvocationDescriptor['parameters'][number]),
     Object.freeze({
       name: 'sessionId',
       wire: 'sessionId',
       source: 'json',
-      codec: strictCodec('dsh-mcp-panel/types#TrialSessionId', z.string()),
+      codec: strictCodec('dsh-mcp-workbench/types#TrialSessionId', z.string()),
       acceptsUndefined: true,
     } satisfies InvocationDescriptor['parameters'][number]),
   ]),
-  result: strictCodec('dsh-mcp-panel/types#McpTrialResultWire', MCP_TRIAL_RESULT_SCHEMA),
+  result: strictCodec('dsh-mcp-workbench/types#McpTrialResultWire', MCP_TRIAL_RESULT_SCHEMA),
   sourceLocation: Object.freeze({ file: 'src/wire.ts', line: 1, column: 1 }),
 } as const) satisfies InvocationDescriptor
 
-/** Result of `mcpPanel/reload`: one mcp-client row was restarted in place. */
+/** Result of `mcpWorkbench/reload`: one mcp-client row was restarted in place. */
 export interface ReloadResult {
   /** Restarted namespace. */
   serverName: string
@@ -517,23 +517,23 @@ export const RELOAD_RESULT_SCHEMA = z.object({
 })
 
 /**
- * The `mcpPanel/reload` invocation descriptor: restart one mcp-client row
+ * The `mcpWorkbench/reload` invocation descriptor: restart one mcp-client row
  * (dispose its fiber, start it again). No config file is touched — a runtime
  * restart of the same row is the only reconnect this panel performs.
  */
 export const MCP_PANEL_RELOAD_DESCRIPTOR = Object.freeze({
-  id: 'dsh-mcp-panel#mcpPanel/reload',
-  service: 'mcpPanel',
-  namespace: 'mcpPanel',
+  id: 'dsh-mcp-workbench#mcpWorkbench/reload',
+  service: 'mcpWorkbench',
+  namespace: 'mcpWorkbench',
   method: 'reload',
   invocation: Object.freeze({ kind: 'direct' }),
   parameters: Object.freeze([Object.freeze({
     name: 'serverName',
     wire: 'serverName',
     source: 'json',
-    codec: strictCodec('dsh-mcp-panel/types#ReloadServerName', z.string()),
+    codec: strictCodec('dsh-mcp-workbench/types#ReloadServerName', z.string()),
   } satisfies InvocationDescriptor['parameters'][number])]),
-  result: strictCodec('dsh-mcp-panel/types#ReloadResult', RELOAD_RESULT_SCHEMA),
+  result: strictCodec('dsh-mcp-workbench/types#ReloadResult', RELOAD_RESULT_SCHEMA),
   sourceLocation: Object.freeze({ file: 'src/wire.ts', line: 1, column: 1 }),
 } as const) satisfies InvocationDescriptor
 

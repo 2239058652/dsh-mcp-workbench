@@ -3,7 +3,7 @@
  * bearer tokens, JWTs, embedded URLs, and extreme inputs. Every case asserts
  * the credential is gone while benign content survives.
  *
- * @module dsh-mcp-panel/test/sanitize.spec
+ * @module dsh-mcp-workbench/test/sanitize.spec
  */
 
 import { describe, expect, it } from 'vitest'

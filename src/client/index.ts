@@ -1,13 +1,13 @@
 /**
- * `dsh-mcp-panel`, browser half: mounts the `mcpPanel` Remote contribution,
+ * `dsh-mcp-workbench`, browser half: mounts the `mcpWorkbench` Remote contribution,
  * then registers the MCP console as a first-class left-sidebar panel — one
  * `sidebar.panellist` row whose id addresses the `main` panel key of the
- * same name. All data arrives through the `remote.mcpPanel` namespace — the
+ * same name. All data arrives through the `remote.mcpWorkbench` namespace — the
  * page issues no other RPC and holds no state of its own beyond expansion,
  * the editor/trial forms, and the last loaded snapshot. The current session
  * id (for approval routing) is read from the sessions store at call time.
  *
- * @module dsh-mcp-panel/client
+ * @module dsh-mcp-workbench/client
  */
 
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
@@ -43,17 +43,17 @@ export type { PresentedMcpPanel, PresentedProbeRow, PresentedServerRow, BadgeTon
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
     /** MCP management console copy. */
-    'settings.mcpPanel': McpPanelLocaleKey
+    'settings.mcpWorkbench': McpPanelLocaleKey
   }
 }
 
 /** Dictionary namespace owned by this plugin. */
-export const NS = 'settings.mcpPanel'
+export const NS = 'settings.mcpWorkbench'
 
 /** Plugin name: matches the package name, the graph row id, and the bundle id. */
-export const name = 'dsh-mcp-panel'
+export const name = 'dsh-mcp-workbench'
 
-/** Services the console reads; `remote.mcpPanel` appears once this plugin mounts its contribution. */
+/** Services the console reads; `remote.mcpWorkbench` appears once this plugin mounts its contribution. */
 export const inject = ['slots', 'locale', 'remote', 'sessions']
 
 /**
@@ -69,7 +69,7 @@ interface McpPanelSlots {
 }
 
 /** Main-panel key and the sidebar list id that addresses it (they must match). */
-export const PANEL_ID = 'mcp'
+export const PANEL_ID = 'mcp-workbench'
 
 /**
  * Browser plugin body: dictionaries, the scoped stylesheet, the Remote
@@ -78,14 +78,14 @@ export const PANEL_ID = 'mcp'
  * @param ctx - client root context.
  */
 export async function apply(ctx: ClientContext): Promise<void> {
-  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-mcp-panel: dictionaries')
-  ctx.effect(() => installPanelStyles(), 'dsh-mcp-panel: stylesheet')
+  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-mcp-workbench: dictionaries')
+  ctx.effect(() => installPanelStyles(), 'dsh-mcp-workbench: stylesheet')
 
-  // $mount registers the 'remote.mcpPanel' namespace service and owns its
+  // $mount registers the 'remote.mcpWorkbench' namespace service and owns its
   // removal for this fiber's lifetime.
   await ctx.remote.$mount(MCP_PANEL_REMOTE)
 
-  ctx.inject(['remote.mcpPanel'], (scope) => {
+  ctx.inject(['remote.mcpWorkbench'], (scope) => {
     // The slots service owner moved across harness lines (rc.2's client
     // runtime, then the UI renderer); read it through the local structural
     // contract so both lines compile against the same runtime shape.
@@ -93,22 +93,22 @@ export async function apply(ctx: ClientContext): Promise<void> {
     const t = scope.locale.bind(NS)
     const unwrap = <T>(result: RemoteResult<T>, method: string): T => {
       if (!result.ok) {
-        throw new Error(`mcpPanel.${method} failed: ${result.error.code}: ${result.error.message}`)
+        throw new Error(`mcpWorkbench.${method} failed: ${result.error.code}: ${result.error.message}`)
       }
       return result.value
     }
     const status: McpPanelTabInjected['status'] = async () =>
-      unwrap<McpPanelSnapshot>(await scope.remote.mcpPanel.status(), 'status')
+      unwrap<McpPanelSnapshot>(await scope.remote.mcpWorkbench.status(), 'status')
     const probe: McpPanelTabInjected['probe'] = async (serverName) =>
-      unwrap<ProbeStarted>(await scope.remote.mcpPanel.probe(serverName), 'probe')
+      unwrap<ProbeStarted>(await scope.remote.mcpWorkbench.probe(serverName), 'probe')
     const previewPatch: McpPanelTabInjected['previewPatch'] = async (opJson) =>
-      unwrap<PatchPreview>(await scope.remote.mcpPanel.previewPatch(opJson), 'previewPatch')
+      unwrap<PatchPreview>(await scope.remote.mcpWorkbench.previewPatch(opJson), 'previewPatch')
     const writePatch: McpPanelTabInjected['writePatch'] = async (opJson, confirmed) =>
-      unwrap<PatchWriteResult>(await scope.remote.mcpPanel.writePatch(opJson, confirmed, currentSessionId(scope.get('sessions'))), 'writePatch')
+      unwrap<PatchWriteResult>(await scope.remote.mcpWorkbench.writePatch(opJson, confirmed, currentSessionId(scope.get('sessions'))), 'writePatch')
     const callTool: McpPanelTabInjected['callTool'] = async (requestJson) =>
-      unwrap<McpTrialResultWire>(await scope.remote.mcpPanel.callTool(requestJson, currentSessionId(scope.get('sessions'))), 'callTool')
+      unwrap<McpTrialResultWire>(await scope.remote.mcpWorkbench.callTool(requestJson, currentSessionId(scope.get('sessions'))), 'callTool')
     const reloadServer: McpPanelTabInjected['reloadServer'] = async (serverName) =>
-      unwrap<ReloadResult>(await scope.remote.mcpPanel.reload(serverName), 'reload')
+      unwrap<ReloadResult>(await scope.remote.mcpWorkbench.reload(serverName), 'reload')
     const injected = (): McpPanelTabInjected => ({ status, probe, previewPatch, writePatch, callTool, reloadServer })
     // Left-sidebar entry: the list id addresses the matching `main` panel key,
     // and the sidebar resolves the row label from this registration's metadata.

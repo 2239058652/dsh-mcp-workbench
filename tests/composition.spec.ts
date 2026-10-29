@@ -7,7 +7,7 @@
  * invalid config must fail loud for the expected reason (Schemastery), and a
  * default export must fail with the missing-inject reason.
  *
- * @module dsh-mcp-panel/test/composition.spec
+ * @module dsh-mcp-workbench/test/composition.spec
  */
 
 import { describe, expect, it, beforeAll, afterAll } from 'vitest'
@@ -46,7 +46,7 @@ function runRunner(configPath: string) {
   return { status: result.status, stdout: result.stdout, stderr: result.stderr }
 }
 
-const temporaryRoot = mkdtempSync(join(tmpdir(), 'dsh-mcp-panel-loader-'))
+const temporaryRoot = mkdtempSync(join(tmpdir(), 'dsh-mcp-workbench-loader-'))
 
 beforeAll(() => {
   const build = spawnSync('pnpm', ['run', 'build'], {
@@ -74,7 +74,7 @@ describe('Loader composition', () => {
     expect(evidence.stdout).toMatch(/DSH_LOADER_RESULT/u)
     const marker = evidence.stdout.match(/DSH_LOADER_RESULT (.+)$/mu)
     const summary = JSON.parse(marker![1]!)
-    expect(summary.service).toBe('mcpPanel')
+    expect(summary.service).toBe('mcpWorkbench')
     expect(summary.command).toBe('mcp')
     expect(summary.commands).toContain('mcp')
   })

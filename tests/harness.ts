@@ -4,7 +4,7 @@
  * The `/mcp` command is exercised through the REAL commands service, so the
  * command/run + command/done lifecycle events land in a real session log.
  *
- * @module dsh-mcp-panel/test/harness
+ * @module dsh-mcp-workbench/test/harness
  */
 
 import { Context } from '@deepseek-ai/cordis'
@@ -111,7 +111,7 @@ export async function mountHarness(entries: FakeEntry[] = [], config: Record<str
   } as never)
   const plugin = await import('../src/index.ts')
   await ctx.plugin(plugin as unknown as import('@deepseek-ai/cordis').Plugin, config)
-  const service = ctx.get('mcpPanel') as McpPanelService
+  const service = ctx.get('mcpWorkbench') as McpPanelService
   return { ctx, session, agent: makeAgent(session), service, loaderEntries: entries }
 }
 

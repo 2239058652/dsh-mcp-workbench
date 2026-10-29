@@ -4,7 +4,7 @@
  * observed passthrough. The presenter is I/O-free, so these run under the
  * plain node environment.
  *
- * @module dsh-mcp-panel/test/present.spec
+ * @module dsh-mcp-workbench/test/present.spec
  */
 
 import { describe, expect, it } from 'vitest'

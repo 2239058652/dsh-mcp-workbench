@@ -3,7 +3,7 @@
  * namespaces, leftover foreign `mcp__` registrations, underscore-bearing
  * server names, hash-normalized names, non-MCP tools, and empty inputs.
  *
- * @module dsh-mcp-panel/test/grouping.spec
+ * @module dsh-mcp-workbench/test/grouping.spec
  */
 
 import { describe, expect, it } from 'vitest'

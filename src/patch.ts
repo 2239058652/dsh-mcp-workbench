@@ -21,7 +21,7 @@
  *
  * Pure module: no I/O, no registry reads.
  *
- * @module dsh-mcp-panel/patch
+ * @module dsh-mcp-workbench/patch
  */
 
 import { z } from 'zod'
@@ -316,7 +316,7 @@ export function nextEntryId(serverName: string, existingIds: ReadonlySet<string>
     const candidate = `${base}-${index}`
     if (!existingIds.has(candidate)) return candidate
   }
-  throw new Error('dsh-mcp-panel: cannot allocate a unique entry id')
+  throw new Error('dsh-mcp-workbench: cannot allocate a unique entry id')
 }
 
 /** Validated patch op resolved host-side against loader facts. */
@@ -390,10 +390,10 @@ export function resolvePatchOp(
 export function patchComment(op: ResolvedPatchOp, now = new Date()): string {
   const date = now.toISOString().slice(0, 10)
   switch (op.kind) {
-    case 'add': return `dsh-mcp-panel: add server (${date})`
-    case 'edit': return `dsh-mcp-panel: edit server ${op.entryId} (${date})`
-    case 'disable': return `dsh-mcp-panel: remove server ${op.entryId} — disabled (no runtime remove exists; re-enable with /mcp <server> enable) (${date})`
-    case 'enable': return `dsh-mcp-panel: re-enable server ${op.entryId} (${date})`
+    case 'add': return `dsh-mcp-workbench: add server (${date})`
+    case 'edit': return `dsh-mcp-workbench: edit server ${op.entryId} (${date})`
+    case 'disable': return `dsh-mcp-workbench: remove server ${op.entryId} — disabled (no runtime remove exists; re-enable with /mcp <server> enable) (${date})`
+    case 'enable': return `dsh-mcp-workbench: re-enable server ${op.entryId} (${date})`
   }
 }
 

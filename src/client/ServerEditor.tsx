@@ -20,7 +20,7 @@ export interface ServerEditorActions {
 
 /** Editor props: an existing row's sanitized view, or null for add mode. */
 export interface ServerEditorProps {
-  t: PropsLocale<'settings.mcpPanel'>['t']
+  t: PropsLocale<'settings.mcpWorkbench'>['t']
   /** Sanitized config view to edit; null = add mode. */
   view: McpServerConfigView | null
   /** Existing entry id (edit mode only). */
@@ -249,7 +249,7 @@ function MapEditor({ label, rows, setRows, t }: {
   label: string
   rows: MapRow[]
   setRows: (updater: (current: MapRow[]) => MapRow[]) => void
-  t: PropsLocale<'settings.mcpPanel'>['t']
+  t: PropsLocale<'settings.mcpWorkbench'>['t']
 }): ReactNode {
   return (
     <fieldset className="dmcp-map">

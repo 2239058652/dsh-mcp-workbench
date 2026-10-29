@@ -6,7 +6,7 @@
  * truncation, the never-rejecting done hook, the stdio initialize handshake,
  * and the child-exit/spawn-failure paths.
  *
- * @module dsh-mcp-panel/test/probe.spec
+ * @module dsh-mcp-workbench/test/probe.spec
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest'

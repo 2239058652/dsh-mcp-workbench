@@ -5,13 +5,13 @@
  * as keys, never values, so the panel can prompt for credentials without ever
  * shipping one. Pure module: no I/O, no registry reads.
  *
- * @module dsh-mcp-panel/catalog
+ * @module dsh-mcp-workbench/catalog
  */
 
 import type { McpServerConfigInput } from './patch.ts'
 
 /** Schema discriminator of the catalog document (version 1). */
-export const CATALOG_SCHEMA = 'dsh-mcp-panel/catalog@v1' as const
+export const CATALOG_SCHEMA = 'dsh-mcp-workbench/catalog@v1' as const
 
 /** The `serverName` contract the official client enforces (`[A-Za-z0-9_-]{1,32}`). */
 const CATALOG_ID_PATTERN = /^[A-Za-z0-9_-]{1,32}$/u

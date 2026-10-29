@@ -12,7 +12,7 @@
  * - Every suggestion below is DERIVED from error-text patterns, so it is
  *   prefixed as a suggestion, never asserted as the failure cause.
  *
- * @module dsh-mcp-panel/diagnostics
+ * @module dsh-mcp-workbench/diagnostics
  */
 
 import type { McpFiberPhase, McpTransport } from './wire.ts'

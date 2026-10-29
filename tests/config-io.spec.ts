@@ -2,7 +2,7 @@
  * MCP config import/export: a versioned JSON document round-trips server rows,
  * `!!js` config exports as `null` with a reason, and the import parser
  * validates every server against the official client face.
- * @module dsh-mcp-panel/test/config-io.spec
+ * @module dsh-mcp-workbench/test/config-io.spec
  */
 
 import { describe, expect, it } from 'vitest'
@@ -14,7 +14,7 @@ describe('exportMcpConfigs', () => {
       { entryId: 'mcp-github', config: { serverName: 'github', transport: 'stdio', command: 'npx', env: { TOKEN: 'secret' } } },
     ])
     const document = JSON.parse(json) as { schema: string; servers: Array<{ entryId: string; config: Record<string, unknown> }> }
-    expect(document.schema).toBe('dsh-mcp-panel/mcp-config@v1')
+    expect(document.schema).toBe('dsh-mcp-workbench/mcp-config@v1')
     expect(document.servers).toHaveLength(1)
     expect(document.servers[0]!.entryId).toBe('mcp-github')
     expect(document.servers[0]!.config['command']).toBe('npx')
@@ -41,7 +41,7 @@ describe('parseMcpConfigsImport', () => {
   })
 
   it('defaults the entry id from the serverName when absent', () => {
-    const json = JSON.stringify({ schema: 'dsh-mcp-panel/mcp-config@v1', servers: [{ config: { serverName: 'git', transport: 'stdio', command: 'uvx' } }] })
+    const json = JSON.stringify({ schema: 'dsh-mcp-workbench/mcp-config@v1', servers: [{ config: { serverName: 'git', transport: 'stdio', command: 'uvx' } }] })
     const rows = parseMcpConfigsImport(json)
     expect(rows[0]!.entryId).toBe('mcp-git')
   })

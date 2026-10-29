@@ -5,7 +5,7 @@
  * upstream `mcp/status` consumption, secret exclusion, log
  * reconstructability, and the optional probe tool.
  *
- * @module dsh-mcp-panel/test/command.spec
+ * @module dsh-mcp-workbench/test/command.spec
  */
 
 import { describe, expect, it } from 'vitest'

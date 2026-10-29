@@ -3,7 +3,7 @@
  * unowned job start), the probe-record cap, and passive-probe state
  * aggregation. No network — the fetch path is covered in `probe.spec.ts`.
  *
- * @module dsh-mcp-panel/test/service.spec
+ * @module dsh-mcp-workbench/test/service.spec
  */
 
 import { mkdtemp, readFile } from 'node:fs/promises'
@@ -224,7 +224,7 @@ describe('console actions', () => {
   })
 
   it('writePatch appends with a backup and reports the interactive approval path', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-panel-service-'))
+    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-workbench-service-'))
     const harness = await mountHarness([mcpRow('mcp-github', STDIO_CONFIG)], { writeVerifyEnabled: false })
     ;(harness.ctx as { baseUrl?: string }).baseUrl = dir
     const result = await harness.service.writePatch(JSON.stringify({
@@ -246,7 +246,7 @@ describe('console actions', () => {
       config: { serverName: 'new', transport: 'stdio', command: 'node' },
     }), true, undefined)).rejects.toThrow('patch path is unknown')
     // With a path but no confirmation: still fail closed.
-    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-panel-service-'))
+    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-workbench-service-'))
     ;(harness.ctx as { baseUrl?: string }).baseUrl = dir
     await expect(harness.service.writePatch(JSON.stringify({
       kind: 'add',
@@ -265,7 +265,7 @@ describe('console actions', () => {
   it('routes the write through ctx.approval when the agent is running a turn', async () => {
     const asked: Array<{ toolName: string; agent: unknown }> = []
     const approval = { request: async (req: { toolName: string; agent: unknown }) => { asked.push(req); return 'allowed-once' } }
-    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-panel-service-'))
+    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-workbench-service-'))
     const harness = await mountHarness([mcpRow('mcp-github', STDIO_CONFIG)], { writeVerifyEnabled: false })
     ;(harness.ctx as { baseUrl?: string }).baseUrl = dir
     harness.ctx.provide('approval', approval as never)
@@ -279,8 +279,8 @@ describe('console actions', () => {
     }), true, 's1')
     expect(result.approvalPath).toBe('harness-approval')
     expect(asked).toEqual([{
-      toolName: 'mcp-panel/writePatch',
-      reason: 'append a dsh-mcp-panel operation (add) to the profile patch layer',
+      toolName: 'mcp-workbench/writePatch',
+      reason: 'append a dsh-mcp-workbench operation (add) to the profile patch layer',
       agent: running,
     }])
   })
@@ -288,7 +288,7 @@ describe('console actions', () => {
   it('does not ask for approval when the agent is idle, and falls back to the confirm path', async () => {
     const asked: unknown[] = []
     const approval = { request: async (req: unknown) => { asked.push(req); return 'allowed-once' } }
-    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-panel-service-'))
+    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-workbench-service-'))
     const harness = await mountHarness([mcpRow('mcp-github', STDIO_CONFIG)], { writeVerifyEnabled: false })
     ;(harness.ctx as { baseUrl?: string }).baseUrl = dir
     harness.ctx.provide('approval', approval as never)
@@ -305,7 +305,7 @@ describe('console actions', () => {
   it('asks nobody when no agent is bound to the session (no turn to attribute)', async () => {
     const asked: unknown[] = []
     const approval = { request: async (req: unknown) => { asked.push(req); return 'allowed-once' } }
-    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-panel-service-'))
+    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-workbench-service-'))
     const harness = await mountHarness([mcpRow('mcp-github', STDIO_CONFIG)], { writeVerifyEnabled: false })
     ;(harness.ctx as { baseUrl?: string }).baseUrl = dir
     harness.ctx.provide('approval', approval as never)
@@ -319,7 +319,7 @@ describe('console actions', () => {
 
   it('a rejected approval denies the write even when confirmed', async () => {
     const approval = { request: async () => 'rejected' }
-    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-panel-service-'))
+    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-workbench-service-'))
     const harness = await mountHarness([mcpRow('mcp-github', STDIO_CONFIG)])
     ;(harness.ctx as { baseUrl?: string }).baseUrl = dir
     harness.ctx.provide('approval', approval as never)
@@ -400,7 +400,7 @@ describe('console actions', () => {
   })
 
   it('writePatch verifies a disable against the loader and fails honestly when it is skipped', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-panel-service-'))
+    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-workbench-service-'))
     const entries = [mcpRow('mcp-github', STDIO_CONFIG)]
     const harness = await mountHarness(entries, { writeVerifyTimeoutMs: 100 })
     ;(harness.ctx as { baseUrl?: string }).baseUrl = dir
@@ -414,7 +414,7 @@ describe('console actions', () => {
   })
 
   it('writePatch succeeds once the loader re-applies the fragment (live reload)', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-panel-service-'))
+    const dir = await mkdtemp(join(tmpdir(), 'dsh-mcp-workbench-service-'))
     const entries = [mcpRow('mcp-github', STDIO_CONFIG)]
     const harness = await mountHarness(entries, { writeVerifyTimeoutMs: 5_000 })
     ;(harness.ctx as { baseUrl?: string }).baseUrl = dir

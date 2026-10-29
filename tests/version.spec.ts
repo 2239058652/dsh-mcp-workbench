@@ -4,7 +4,7 @@
  * handshakes claim a stale release. Bumping `package.json` without touching
  * `PROBE_CLIENT_INFO` fails this test.
  *
- * @module dsh-mcp-panel/test/version.spec
+ * @module dsh-mcp-workbench/test/version.spec
  */
 
 import { describe, expect, it } from 'vitest'
@@ -23,6 +23,6 @@ describe('probe clientInfo version', () => {
   })
 
   it('advertises the panel identity on the wire', () => {
-    expect(PROBE_CLIENT_INFO.name).toBe('dsh-mcp-panel')
+    expect(PROBE_CLIENT_INFO.name).toBe('dsh-mcp-workbench')
   })
 })

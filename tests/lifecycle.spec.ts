@@ -6,7 +6,7 @@
  * blocks), and the explicit resolveConfig negative (the second fail-loud
  * layer beyond the Loader's Schemastery pass).
  *
- * @module dsh-mcp-panel/test/lifecycle.spec
+ * @module dsh-mcp-workbench/test/lifecycle.spec
  */
 
 import { describe, expect, it } from 'vitest'
@@ -41,7 +41,7 @@ function fakeJobs() {
 async function mount(config: Record<string, unknown> = {}, jobs?: unknown, entries: unknown[] = []) {
   const ctx = new Context()
   await ctx.plugin(SessionStore)
-  const session = ctx.sessions.create(SessionId('dsh-mcp-panel-lifecycle'))
+  const session = ctx.sessions.create(SessionId('dsh-mcp-workbench-lifecycle'))
   ctx.provide('systemPrompt', { tools: () => () => undefined, section: () => () => undefined } as never)
   await ctx.plugin(ToolRuntime)
   await ctx.plugin(CommandRuntime)
@@ -67,7 +67,7 @@ describe('export contract', () => {
     const loader = Object.create(Loader.prototype)
     const unwrapped = loader.unwrapExports(plugin)
     expect(unwrapped).toBe(plugin)
-    expect(unwrapped.name).toBe('mcp-panel')
+    expect(unwrapped.name).toBe('mcp-workbench')
     expect(unwrapped.inject).toEqual(['tools', 'loader'])
     expect(typeof unwrapped.Config).toBe('function')
     expect(typeof unwrapped.apply).toBe('function')
@@ -82,13 +82,13 @@ describe('fiber disposal', () => {
   it('removes the service, the /mcp command, and the mcp_probe tool on dispose', async () => {
     const harness = await mount({ probeEnabled: true }, fakeJobs())
     try {
-      expect(harness.ctx.get('mcpPanel')).toBeDefined()
+      expect(harness.ctx.get('mcpWorkbench')).toBeDefined()
       expect(harness.ctx.commands.list(harness.agent).find(entry => entry.name === 'mcp')).toBeDefined()
       expect(harness.ctx.tools.get('mcp_probe')).toBeDefined()
 
       await harness.pluginFiber.dispose()
 
-      expect(harness.ctx.get('mcpPanel')).toBeUndefined()
+      expect(harness.ctx.get('mcpWorkbench')).toBeUndefined()
       expect(harness.ctx.commands.list(harness.agent).find(entry => entry.name === 'mcp')).toBeUndefined()
       expect(harness.ctx.tools.get('mcp_probe')).toBeUndefined()
     } finally {
