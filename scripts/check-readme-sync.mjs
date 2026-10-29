@@ -1,13 +1,14 @@
 // Five-language README sync gate: every README must carry the same number of
-// `## ` sections as the English source, state the install command, and contain
-// every configuration-table key. Section headings may be translated; the
-// English file is the source of truth.
+// `## ` sections as the Chinese default (`README.md`), state the install
+// command, and contain every configuration-table key. Section headings may be
+// translated; the Chinese file is the default landing page and the source of
+// truth.
 import { readFileSync, existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
-const FILES = ['README.md', 'README-zh.md', 'README-es.md', 'README-pt.md', 'README-hi.md']
+const FILES = ['README.md', 'README-en.md', 'README-es.md', 'README-pt.md', 'README-hi.md']
 const INSTALL_COMMAND = 'dsh plugin --profile web add dsh-mcp-panel'
 
 const failures = []
@@ -30,6 +31,9 @@ const configKeysOf = (text) => {
   if (start === -1) return []
   const end = lines.findIndex((line, index) => index > start && /^##\s+/u.test(line))
   const section = lines.slice(start, end === -1 ? undefined : end)
+  // Config keys are ASCII identifiers in every locale; that also drops the
+  // translated column header (`键`, `Clave`, …) the source table starts with.
+  const isKey = (value) => /^[A-Za-z][A-Za-z0-9]*$/u.test(value)
   const keys = []
   for (const line of section) {
     if (!line.startsWith('|')) continue
@@ -37,8 +41,8 @@ const configKeysOf = (text) => {
     const key = cells[1]
     if (key === undefined || key === '' || key === 'Key' || /^-+$/u.test(key)) continue
     const tokens = [...key.matchAll(/`([^`]+)`/gu)].map(match => match[1])
-    if (tokens.length > 0) keys.push(...tokens)
-    else keys.push(key)
+    if (tokens.length > 0) keys.push(...tokens.filter(isKey))
+    else if (isKey(key)) keys.push(key)
   }
   return keys
 }
