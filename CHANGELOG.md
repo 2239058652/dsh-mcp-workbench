@@ -2,20 +2,19 @@
 
 ## [0.7.0] - 2026-10-30
 
-Forked from `PerryLink/dsh-mcp-panel` and versioned on its own from here; the
-entries below are this fork's, earlier ones are upstream's.
+从 `PerryLink/dsh-mcp-panel` 分叉而来，从此独立版本号；以下条目属于本分支，更早的条目属于上游。
 
-### Changed
+### 变更
 
-- **The console is its own left-sidebar page (`mcp-workbench`), not a Settings tab.** One row per server with the state that matters, and the detail, editor, probe-log and capability dialogs open over it instead of pushing the list around.
-- **Per-row restart (`mcpWorkbench/reload`).** Refresh now restarts the rows a probe found dead, and the rows that answer while nothing is registered — the only way a bridge drops tools a dead transport left behind. The snapshot is re-read once after the restarts so the tools show up without a second click.
-- **Probe results drive the row badge.** Reachable rows show their tool count, unreachable rows say so and hide the stale count, unknown state stays unknown.
-- **The editor saves in one step** (`保存并生效` = preview + append), requires the fields that decide whether the row can mount, and repairs a URL pasted with words in front of its scheme.
-- Command `mcpw` → `mcp`; Remote namespace `mcpPanel` → `mcpWorkbench`; package `dsh-mcp-panel` → `dsh-mcp-workbench`.
+- **控制台独立成左侧栏页面（`mcp-workbench`），不再挂在设置页。** 每台服务器一行，只显示有用的状态；详情、编辑、探测记录、说明与能力都以弹窗打开，不再挤压列表。
+- **单行重启（`mcpWorkbench/reload`）。** 「刷新」现在会重启探测不可达的行，以及「端口通但工具数为 0」的行——只有重启才能让桥接层清掉死连接残留的工具注册。重启后会再读一次快照，工具不用点第二下就出现。
+- **探测结果决定行内徽章。** 可达的行显示工具数，不可达的行明确标出并隐藏过期的工具数，未知状态如实显示未知。
+- **编辑器一步保存**（「保存并生效」= 预览 + 追加），只放行决定这一行能否挂载的必填项，并自动修掉粘贴时混进地址前面的杂字。
+- 命令 `mcpw` → `mcp`；Remote 命名空间 `mcpPanel` → `mcpWorkbench`；包名 `dsh-mcp-panel` → `dsh-mcp-workbench`。
 
-### Fixed
+### 修复
 
-- **Typing in the editor blanked the page.** The header/env/tool-filter handlers read `event.currentTarget` inside a `setState` callback, which React runs after clearing it; the read threw during render. The page is also wrapped in an error boundary now, so a future throw shows a card instead of an empty app.
+- **在编辑器里输入会白屏。** 请求头/env/工具筛选的输入框在 `setState` 回调里读 `event.currentTarget`，React 执行回调时该属性已被清空，读取即抛异常导致渲染失败。页面同时加了错误边界，以后再有异常只显示错误卡片，不会整页变白。
 
 ## [0.6.29] - 2026-10-19
 
