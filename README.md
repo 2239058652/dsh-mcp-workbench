@@ -14,7 +14,7 @@
 
 
 ```sh
-dsh plugin --profile <name> add dsh-mcp-workbench
+dsh plugin --profile <name> add github:2239058652/dsh-mcp-workbench
 ```
 
 
