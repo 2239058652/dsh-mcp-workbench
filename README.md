@@ -8,6 +8,7 @@
 
 > **这是个人 fork。** 基于 [PerryLink/dsh-mcp-panel](https://github.com/PerryLink/dsh-mcp-panel) 修改，仅供本人使用；上游的作者与维护归 PerryLink，本仓库与其无隶属关系，也不提供官方支持。
 
+[![DSH Market](https://raw.githubusercontent.com/2BingLing/dsh-market/master/assets/readme/badge-listed-zh.svg)](https://dsh.market/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![DSH plugin](https://img.shields.io/badge/dsh--plugin-✅-green)](https://github.com/topics/dsh-plugin)
 [![Node](https://img.shields.io/badge/node-%5E22.19%20%7C%7C%20%3E%3D24-brightgreen.svg)](#)
