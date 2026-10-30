@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.7.0] - 2026-10-30
+
+Forked from `PerryLink/dsh-mcp-panel` and versioned on its own from here; the
+entries below are this fork's, earlier ones are upstream's.
+
+### Changed
+
+- **The console is its own left-sidebar page (`mcp-workbench`), not a Settings tab.** One row per server with the state that matters, and the detail, editor, probe-log and capability dialogs open over it instead of pushing the list around.
+- **Per-row restart (`mcpWorkbench/reload`).** Refresh now restarts the rows a probe found dead, and the rows that answer while nothing is registered — the only way a bridge drops tools a dead transport left behind. The snapshot is re-read once after the restarts so the tools show up without a second click.
+- **Probe results drive the row badge.** Reachable rows show their tool count, unreachable rows say so and hide the stale count, unknown state stays unknown.
+- **The editor saves in one step** (`保存并生效` = preview + append), requires the fields that decide whether the row can mount, and repairs a URL pasted with words in front of its scheme.
+- Command `mcpw` → `mcp`; Remote namespace `mcpPanel` → `mcpWorkbench`; package `dsh-mcp-panel` → `dsh-mcp-workbench`.
+
+### Fixed
+
+- **Typing in the editor blanked the page.** The header/env/tool-filter handlers read `event.currentTarget` inside a `setState` callback, which React runs after clearing it; the read threw during render. The page is also wrapped in an error boundary now, so a future throw shows a card instead of an empty app.
+
 ## [0.6.29] - 2026-10-19
 
 ### Fixed

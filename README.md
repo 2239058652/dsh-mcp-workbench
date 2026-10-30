@@ -30,11 +30,7 @@ dsh plugin --profile <name> add dsh-mcp-workbench
 - **git 通道**（最新 `main`）：`dsh plugin --profile web add github:2239058652/dsh-mcp-workbench` —— `prepare` 脚本只用生产依赖构建。
 - **npm 通道**（发布版本）：`dsh plugin --profile web add dsh-mcp-workbench`。
 - **tarball 通道**：在本仓库 `pnpm pack`，再 `dsh plugin --profile web add ./dsh-mcp-workbench-<version>.tgz`。
-- **卸载**：从 `cordis.patch.yml` 移除 `mcp-panel` 行（web 面板热重载），从 profile 的 `node_modules` 删除本包，并用 `dsh web --dump-config` 确认没有残留的 `mcp-panel` 行。
-
-## ⭐ 如果它帮到了你
-
-这个插件是 [DSH 插件家族](https://github.com/PerryLink)的一员（95 个，全部 Apache-2.0）。如果你在用，**给个 star** —— 它不会解锁任何功能，但会让下一个人在搜索里更容易找到它。
+- **卸载**：从 `cordis.patch.yml` 移除 `mcp-workbench` 行（web 面板热重载），从 profile 的 `node_modules` 删除本包，并用 `dsh web --dump-config` 确认没有残留的 `mcp-workbench` 行。
 
 ## What is dsh-mcp-workbench?
 
