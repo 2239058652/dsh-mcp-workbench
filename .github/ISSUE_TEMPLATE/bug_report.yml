@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a bug in dsh-mcp-panel
+description: Report a bug in dsh-mcp-workbench
 title: 'bug: '
 labels: [bug]
 body:
@@ -11,7 +11,7 @@ body:
     id: version
     attributes:
       label: Plugin version
-      description: The dsh-mcp-panel version (npm version, git tag, or `dsh plugin list` output).
+      description: The dsh-mcp-workbench version (npm version, git tag, or `dsh plugin list` output).
       placeholder: '0.3.0'
     validations:
       required: true

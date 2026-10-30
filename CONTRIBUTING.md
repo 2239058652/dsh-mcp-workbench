@@ -1,6 +1,6 @@
-# Contributing to dsh-mcp-panel
+# Contributing to dsh-mcp-workbench
 
-Thanks for helping. This project is maintained as a normal member of the PerryLink DSH plugin family.
+Thanks for helping. This is a personal fork of [PerryLink/dsh-mcp-panel](https://github.com/PerryLink/dsh-mcp-panel); fixes are welcome, but changes that only make sense for the upstream project may be declined.
 
 ## Before you open an issue
 

@@ -5,7 +5,7 @@
 Please report security issues **privately**, never in a public issue:
 
 1. Use GitHub's **private vulnerability reporting** on the
-   [Security tab](https://github.com/PerryLink/dsh-mcp-panel/security) of this repository
+   [Security tab](https://github.com/2239058652/dsh-mcp-workbench/security) of this repository
    (Advisories → "Report a vulnerability"). It keeps the report confidential and gives us a
    structured channel to coordinate the fix.
 2. If that channel is unavailable, contact the repository owner through their GitHub profile.
@@ -31,7 +31,7 @@ Please include:
 
 ## Scope
 
-This policy covers the `dsh-mcp-panel` repository and the npm package `dsh-mcp-panel`.
+This policy covers the `dsh-mcp-workbench` repository (a personal fork of `PerryLink/dsh-mcp-panel`). No npm package is published from it.
 Issues in DeepSeek Harness itself should be reported to
 [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) instead.
 
