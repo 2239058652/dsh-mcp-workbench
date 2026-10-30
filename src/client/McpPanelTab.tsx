@@ -6,6 +6,7 @@ import { presentMcpPanel, probeBadge, summarizePanel, type BadgeTone, type Prese
 import { ServerEditor } from './ServerEditor.tsx'
 import { Modal } from './Modal.tsx'
 import { PanelBoundary } from './PanelBoundary.tsx'
+import { restartTargets } from './restart.ts'
 import type {
   McpPanelSnapshot,
   McpProbeView,
@@ -140,28 +141,6 @@ function formatProbeTime(view: McpProbeView): string {
   const format = (ms: number): string => new Date(ms).toLocaleTimeString(undefined, { hour12: false })
   const start = format(view.startedAt)
   return view.finishedAt === null ? start : `${start}–${format(view.finishedAt)}`
-}
-
-/**
- * Rows a refresh should restart: the ones the probe found dead, plus the ones
- * it found reachable with nothing registered — the port answers but the bridge
- * never synced tools, and only a restart makes it handshake again.
- */
-function restartTargets(snapshot: McpPanelSnapshot): readonly string[] {
-  const settled = new Map<string, McpProbeView['status']>()
-  for (const probeView of snapshot.probes) {
-    if (probeView.status === 'running' || settled.has(probeView.serverName)) continue
-    settled.set(probeView.serverName, probeView.status)
-  }
-  const targets = new Set<string>()
-  for (const [serverName, probeStatus] of settled) {
-    if (probeStatus !== 'completed') targets.add(serverName)
-  }
-  for (const view of snapshot.servers) {
-    if (!view.enabled || view.entryId === '' || view.tools.length > 0) continue
-    if (settled.get(view.serverName) === 'completed') targets.add(view.serverName)
-  }
-  return [...targets]
 }
 
 /** Localized text for one diagnostic code (fallback: the wire's English text). */

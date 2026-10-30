@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from 'react'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type { McpServerConfigView, PatchPreview, PatchWriteResult } from '../wire.ts'
+import { isAbsoluteHttpUrl, normalizeUrl } from './url.ts'
 
 /** One editable key/value row of env or headers. */
 interface MapRow {
@@ -305,25 +306,4 @@ function MapEditor({ label, rows, setRows, t }: {
 /** Message text of an arbitrary thrown value. */
 function messageOf(failure: unknown): string {
   return failure instanceof Error ? failure.message : String(failure)
-}
-
-/** Whether the value is an absolute http(s) URL (the host's own requirement). */
-function isAbsoluteHttpUrl(raw: string): boolean {
-  try {
-    const parsed = new URL(raw.trim())
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
-  } catch {
-    return false
-  }
-}
-
-/**
- * Trim one URL field and drop words pasted in front of the scheme, so
- * "name https://host/path" becomes the URL the host expects.
- */
-function normalizeUrl(raw: string): string {
-  const text = raw.trim()
-  if (text === '' || isAbsoluteHttpUrl(text)) return text
-  const match = /https?:\/\/\S+$/u.exec(text)
-  return match === null ? text : match[0]
 }
