@@ -769,7 +769,16 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
                   className="dmcp-row-main"
                   onClick={() => { setSelected(row.view.serverName); setRemoveArm(null); setProbeError(null) }}
                 >
-                  <span className="dmcp-card-status" data-tone={row.tone} aria-hidden="true" />
+                  <span
+                    className="dmcp-card-status"
+                    data-tone={liveness === undefined
+                      ? row.tone
+                      : liveness === 'reachable' ? 'ok' : 'error'}
+                    aria-hidden="true"
+                    title={liveness === undefined
+                      ? t('statusUnknownHint')
+                      : liveness === 'reachable' ? t('statusReachable') : t('statusUnreachable')}
+                  />
                   <span className="dmcp-card-ident">
                     <span className="dmcp-card-name">{row.view.serverName}</span>
                     <span className="dmcp-card-sub">

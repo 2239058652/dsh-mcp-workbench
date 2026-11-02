@@ -67,6 +67,20 @@ describe('connectionBadge', () => {
     expect(connectionBadge(server({ phase: 'disposed' }))).toEqual({ badge: 'disposed', tone: 'muted' })
     expect(connectionBadge(server({ phase: 'unknown' }))).toEqual({ badge: 'unknown', tone: 'muted' })
   })
+
+  it('falls back to the probe state when the upstream seam reported nothing', () => {
+    // The shipped seam is optional and HTTP has no heartbeat, so without this
+    // the dot stayed grey even after a probe answered.
+    expect(connectionBadge(server({ phase: 'unknown', probeState: 'reachable' })))
+      .toEqual({ badge: 'connected', tone: 'ok' })
+    expect(connectionBadge(server({ phase: 'unknown', probeState: 'unreachable' })))
+      .toEqual({ badge: 'exhausted', tone: 'error' })
+  })
+
+  it('prefers the upstream phase over a probe when both exist', () => {
+    expect(connectionBadge(server({ phase: 'exhausted', probeState: 'reachable' })))
+      .toEqual({ badge: 'exhausted', tone: 'error' })
+  })
 })
 
 describe('probeBadge', () => {

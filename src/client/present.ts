@@ -105,6 +105,26 @@ export function connectionBadge(view: McpServerView): { badge: PresentedServerRo
     case 'waiting': return { badge: view.phase, tone: 'warn' }
     case 'exhausted': return { badge: 'exhausted', tone: 'error' }
     case 'disposed': return { badge: 'disposed', tone: 'muted' }
+    default: return probeDerivedBadge(view)
+  }
+}
+
+/**
+ * Fallback for a row the upstream seam never reported.
+ *
+ * The shipped `mcp/status` seam is optional, and a Streamable HTTP transport
+ * has no heartbeat, so an unreported row would otherwise stay grey forever.
+ * The console's own probe is the only fact that can colour it: it answers the
+ * question the dot asks ("is this reachable now?"), whereas the registered tool
+ * count is history and keeps claiming a dead transport's tools.
+ *
+ * @param view - the assembled server view.
+ * @returns the probe-derived badge and tone, or muted when never probed.
+ */
+function probeDerivedBadge(view: McpServerView): { badge: PresentedServerRow['badge']; tone: BadgeTone } {
+  switch (view.probeState) {
+    case 'reachable': return { badge: 'connected', tone: 'ok' }
+    case 'unreachable': return { badge: 'exhausted', tone: 'error' }
     default: return { badge: 'unknown', tone: 'muted' }
   }
 }
@@ -130,7 +150,18 @@ export function probeBadge(status: McpProbeView['status']): { badge: PresentedPr
  * @returns the tab model.
  */
 export function presentMcpPanel(snapshot: McpPanelSnapshot, now = Date.now()): PresentedMcpPanel {
-  const servers = snapshot.servers.map((view): PresentedServerRow => {
+  // The newest settled probe per server, folded into the view it describes so
+  // the badge can fall back to it when the upstream seam reported nothing.
+  const probed = new Set<string>()
+  const latestProbe = new Map<string, 'reachable' | 'unreachable'>()
+  for (const probe of snapshot.probes) {
+    if (probe.status === 'running' || probed.has(probe.serverName)) continue
+    probed.add(probe.serverName)
+    latestProbe.set(probe.serverName, probe.status === 'completed' ? 'reachable' : 'unreachable')
+  }
+  const servers = snapshot.servers.map((raw): PresentedServerRow => {
+    const probeState = latestProbe.get(raw.serverName)
+    const view = probeState === undefined || raw.phase !== 'unknown' ? raw : { ...raw, probeState }
     const { badge, tone } = connectionBadge(view)
     return {
       view,
