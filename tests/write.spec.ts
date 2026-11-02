@@ -92,11 +92,12 @@ describe('replaceOwnedBlock', () => {
     const file = join(dir, 'cordis.patch.yml')
     await writeFile(file, '# user comment\n- id: other\n  config:\n    keep: me\n', 'utf8')
     await replaceOwnedBlock(file, MARKER, block(['web_search']), 5)
-    await replaceOwnedBlock(file, MARKER, block(['web_search', 'web_fetch']), 5)
+    await replaceOwnedBlock(file, MARKER, block(['web_fetch']), 5)
     const content = await readFile(file, 'utf8')
     const occurrences = content.split(MARKER).length - 1
     expect(occurrences).toBe(1)
-    // The newest state wins, and the earlier tool is gone with its block.
+    // Disjoint states prove the first block is gone, not merely superseded at
+    // load time (a superseded block would still be sitting in the file).
     expect(content).toContain('- web_fetch')
     expect(content).not.toContain('- web_search')
   })
