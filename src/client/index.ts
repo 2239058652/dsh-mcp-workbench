@@ -33,6 +33,7 @@ import type {
   PatchWriteResult,
   ProbeStarted,
   ReloadResult,
+  ToolVisibilityResult,
 } from '../wire.ts'
 
 export type { McpPanelTabInjected, McpPanelTabProps } from './McpPanelTab.tsx'
@@ -109,7 +110,12 @@ export async function apply(ctx: ClientContext): Promise<void> {
       unwrap<McpTrialResultWire>(await scope.remote.mcpWorkbench.callTool(requestJson, currentSessionId(scope.get('sessions'))), 'callTool')
     const reloadServer: McpPanelTabInjected['reloadServer'] = async (serverName) =>
       unwrap<ReloadResult>(await scope.remote.mcpWorkbench.reload(serverName), 'reload')
-    const injected = (): McpPanelTabInjected => ({ status, probe, previewPatch, writePatch, callTool, reloadServer })
+    const setToolHidden: McpPanelTabInjected['setToolHidden'] = async (serverName, toolName, hidden) =>
+      unwrap<ToolVisibilityResult>(
+        await scope.remote.mcpWorkbench.setToolHidden(serverName, toolName, hidden),
+        'setToolHidden',
+      )
+    const injected = (): McpPanelTabInjected => ({ status, probe, previewPatch, writePatch, callTool, reloadServer, setToolHidden })
     // Left-sidebar entry: the list id addresses the matching `main` panel key,
     // and the sidebar resolves the row label from this registration's metadata.
     slots.inject('sidebar.panellist', () => slots.register({

@@ -39,3 +39,10 @@
         # writeVerifyTimeoutMs: 3000
         # Number of cordis.patch.yml backups retained per write.
         # backupCount: 5
+        # Tools hidden from the model, per server: their schema stops riding in
+        # every prompt (that is the token cost), while the registration stays so
+        # the panel can still list and trial them. Bare names, no mcp__ prefix.
+        # disabledTools:
+        #   firecrawl:
+        #     - firecrawl_crawl
+        #     - firecrawl_map

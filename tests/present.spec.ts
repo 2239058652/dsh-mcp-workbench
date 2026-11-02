@@ -134,7 +134,7 @@ describe('presentMcpPanel', () => {
 
 describe('summarizePanel', () => {
   it('counts connected and errored badges, tool coverage, and the total', () => {
-    const tool = (name: string) => ({ name, description: '' })
+    const tool = (name: string) => ({ name, description: '', hidden: false })
     const snapshot: McpPanelSnapshot = { ...SNAPSHOT_BASE,
       observed: false,
       patchFile: null,

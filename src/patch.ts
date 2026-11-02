@@ -434,8 +434,32 @@ export function renderPatchFragment(op: ResolvedPatchOp, now = new Date()): stri
   }
 }
 
-/** Emit a config object block under one `key:` line at a fixed indent. */
-function emitBlock(lines: string[], keyLine: string, value: Record<string, unknown>, indent: number): void {
+/**
+ * Render an id-targeted override for an arbitrary plugin row (whole-config
+ * replacement, the loader dialect's only edit form). Used by the console to
+ * persist its OWN config — the mcp-client row renderer above knows only the
+ * client's shape.
+ *
+ * @param entryId - loader entry id of the row.
+ * @param config - the complete config to restate.
+ * @param now - clock for the comment line (tests pin it).
+ * @returns the YAML block, no trailing newline.
+ */
+export function renderConfigOverride(
+  entryId: string,
+  config: Record<string, unknown>,
+  now = new Date(),
+): string {
+  const lines: string[] = [`# dsh-mcp-workbench: update tool filter (${now.toISOString().slice(0, 10)})`]
+  lines.push(`- id: ${yamlScalar(entryId)}`, `  name: ${yamlScalar(PLUGIN_MODULE)}`)
+  emitBlock(lines, '  config:', config, 4)
+  return lines.join('\n')
+}
+
+/** Package name as the loader resolves it for this plugin's own row. */
+const PLUGIN_MODULE = 'dsh-mcp-workbench'
+
+/** Emit a config object block under one `key:` line at a fixed indent. */function emitBlock(lines: string[], keyLine: string, value: Record<string, unknown>, indent: number): void {
   const entries = Object.entries(value)
   if (entries.length === 0) {
     lines.push(`${keyLine} {}`)

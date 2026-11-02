@@ -33,6 +33,8 @@ export interface McpToolView {
   name: string
   /** Server-provided description; empty when absent. */
   description: string
+  /** Whether the model cannot see this tool (hidden by the plugin's config). */
+  hidden: boolean
 }
 
 /**
@@ -221,6 +223,7 @@ export const MCP_PANEL_SNAPSHOT_SCHEMA = z.object({
     tools: z.array(z.object({
       name: z.string(),
       description: z.string(),
+      hidden: z.boolean(),
     })),
     phase: z.union([z.literal('connecting'), z.literal('connected'), z.literal('waiting'), z.literal('exhausted'), z.literal('disposed'), z.literal('unknown')]),
     attempt: z.number().int(),
@@ -538,6 +541,63 @@ export const MCP_PANEL_RELOAD_DESCRIPTOR = Object.freeze({
 } as const) satisfies InvocationDescriptor
 
 /**
+ * Result of `mcpWorkbench/setToolHidden`: the tool's model visibility changed.
+ */
+export interface ToolVisibilityResult {
+  /** Server namespace the tool belongs to. */
+  serverName: string
+  /** Bare tool name (no `mcp__` prefix), as stored in config. */
+  toolName: string
+  /** Whether the tool is now hidden from the model. */
+  hidden: boolean
+  /** One-line note for the dialog (what took effect, and when). */
+  note: string
+}
+
+/** Strict wire schema for {@link ToolVisibilityResult}. */
+export const TOOL_VISIBILITY_RESULT_SCHEMA = z.object({
+  serverName: z.string(),
+  toolName: z.string(),
+  hidden: z.boolean(),
+  note: z.string(),
+})
+
+/**
+ * The `mcpWorkbench/setToolHidden` invocation descriptor: persist one tool's
+ * visibility and apply it to live agents. Writes the plugin's own config (not
+ * the mcp-client row — that config has no such field).
+ */
+export const MCP_PANEL_SET_TOOL_HIDDEN_DESCRIPTOR = Object.freeze({
+  id: 'dsh-mcp-workbench#mcpWorkbench/setToolHidden',
+  service: 'mcpWorkbench',
+  namespace: 'mcpWorkbench',
+  method: 'setToolHidden',
+  invocation: Object.freeze({ kind: 'direct' }),
+  parameters: Object.freeze([
+    Object.freeze({
+      name: 'serverName',
+      wire: 'serverName',
+      source: 'json',
+      codec: strictCodec('dsh-mcp-workbench/types#ToolHiddenServerName', z.string()),
+    } satisfies InvocationDescriptor['parameters'][number]),
+    Object.freeze({
+      name: 'toolName',
+      wire: 'toolName',
+      source: 'json',
+      codec: strictCodec('dsh-mcp-workbench/types#ToolHiddenToolName', z.string()),
+    } satisfies InvocationDescriptor['parameters'][number]),
+    Object.freeze({
+      name: 'hidden',
+      wire: 'hidden',
+      source: 'json',
+      codec: strictCodec('dsh-mcp-workbench/types#ToolHiddenFlag', z.boolean()),
+    } satisfies InvocationDescriptor['parameters'][number]),
+  ]),
+  result: strictCodec('dsh-mcp-workbench/types#ToolVisibilityResult', TOOL_VISIBILITY_RESULT_SCHEMA),
+  sourceLocation: Object.freeze({ file: 'src/wire.ts', line: 1, column: 1 }),
+} as const) satisfies InvocationDescriptor
+
+/**
  * The canonical invocation list both Typert faces register — the host
  * manifest and the client contribution share these exact descriptor objects,
  * so the two wire codecs can never drift apart.
@@ -549,4 +609,5 @@ export const MCP_PANEL_INVOCATIONS = Object.freeze([
   MCP_PANEL_WRITE_DESCRIPTOR,
   MCP_PANEL_CALLTOOL_DESCRIPTOR,
   MCP_PANEL_RELOAD_DESCRIPTOR,
+  MCP_PANEL_SET_TOOL_HIDDEN_DESCRIPTOR,
 ])

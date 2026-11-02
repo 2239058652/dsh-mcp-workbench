@@ -17,6 +17,7 @@ import type {
   PatchWriteResult,
   ProbeStarted,
   ReloadResult,
+  ToolVisibilityResult,
 } from '../wire.ts'
 
 declare module '@deepseek-ai/dsh-typert-protocol' {
@@ -33,6 +34,8 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     callTool: (requestJson: string, sessionId?: string) => Promise<RemoteResult<McpTrialResultWire>>
     /** Restart one mcp-client row (dispose + start); no config is written. */
     reload: (serverName: string) => Promise<RemoteResult<ReloadResult>>
+    /** Hide or show one tool to the model (persists this plugin's config). */
+    setToolHidden: (serverName: string, toolName: string, hidden: boolean) => Promise<RemoteResult<ToolVisibilityResult>>
   }
   interface TypertRemoteMap {
     'mcpWorkbench/status': () => Promise<RemoteResult<McpPanelSnapshot>>
@@ -41,6 +44,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'mcpWorkbench/writePatch': (opJson: string, confirmed: boolean, sessionId?: string) => Promise<RemoteResult<PatchWriteResult>>
     'mcpWorkbench/callTool': (requestJson: string, sessionId?: string) => Promise<RemoteResult<McpTrialResultWire>>
     'mcpWorkbench/reload': (serverName: string) => Promise<RemoteResult<ReloadResult>>
+    'mcpWorkbench/setToolHidden': (serverName: string, toolName: string, hidden: boolean) => Promise<RemoteResult<ToolVisibilityResult>>
   }
   interface TypertRemoteNamespaceMap {
     mcpWorkbench: TypertRemoteNamespace$mcpWorkbench

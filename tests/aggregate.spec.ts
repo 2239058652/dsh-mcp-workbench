@@ -75,7 +75,7 @@ describe('aggregateServerView', () => {
     const view = aggregateServerView(
       row('mcp-github', { transport: 'stdio', command: 'npx', serverName: 'github' }),
       'github',
-      { serverName: 'github', configured: true, tools: [{ name: 'mcp__github__t', description: 'd' }] },
+      { serverName: 'github', configured: true, tools: [{ name: 'mcp__github__t', description: 'd', hidden: false }] },
       NO_FACTS,
     )
     expect(view).toMatchObject({

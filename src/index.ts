@@ -38,6 +38,7 @@ import { mcpCommand } from './command.ts'
 import { mcpProbeTool } from './probe.ts'
 import { McpPanelService } from './service.ts'
 import { DEFAULT_CATALOG, mergeCatalog } from './catalog.ts'
+import { hiddenToolNames, installToolMask } from './disable.ts'
 import { MCP_STATUS_EVENT, type McpStatusQuery } from './upstream.ts'
 
 // Service Definition — the panel contract: McpPanelService (Remote namespace mcpWorkbench), the snapshot wire schema, and the config schema.
@@ -104,6 +105,7 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
     writeVerifyTimeoutMs: resolved.writeVerifyTimeoutMs,
     backupCount: resolved.backupCount,
     catalog,
+    disabledTools: resolved.disabledTools,
   })
   // A02: mounting the service opens an await window inside `apply`. If this
   // fiber was disposed while it resolved, stop here — a listener or tool
@@ -121,9 +123,14 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
     for (const status of query.list()) service.observe(status)
   }
 
+  // Hide the configured tools from the model: one schema per visible tool
+  // rides in the system prompt, so this is where a disabled tool's token cost
+  // actually goes away. Applied per agent scope (a global restrict throws).
+  const hidden = hiddenToolNames(resolved.disabledTools)
+  installToolMask(ctx, hidden)
+
   // The /mcp command: only where a human-command registry is composed.
-  ctx.inject(['commands'], (scope) => {
-    scope.effect(() => scope.commands.register(mcpCommand(service, resolved.outputLanguage)), 'dsh-mcp-workbench: /mcp command')
+  ctx.inject(['commands'], (scope) => {    scope.effect(() => scope.commands.register(mcpCommand(service, resolved.outputLanguage)), 'dsh-mcp-workbench: /mcp command')
   })
 
   // The jobs controller serves the panel probe action AND the optional tool.

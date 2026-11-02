@@ -86,6 +86,13 @@ export interface Config {
   backupCount?: number
   /** User overlay for the recommended MCP server catalog: entries append to the built-in directory, and an entry with the same `id` replaces the built-in one. */
   catalogEntries?: CatalogEntry[]
+  /**
+   * Tools hidden from the model, keyed by MCP server name: `{ firecrawl:
+   * ['firecrawl_crawl'] }`. Hidden tools leave the prompt entirely (their
+   * schema is no longer sent), which is where most of a server's token cost
+   * sits; the registration stays, so the panel can still list and trial them.
+   */
+  disabledTools?: Record<string, string[]>
 }
 
 /** Fully resolved configuration captured at plugin load. */
@@ -120,6 +127,8 @@ export interface ResolvedConfig {
   backupCount: number
   /** User catalog overlay (validated; empty = built-in directory only). */
   catalogEntries: readonly CatalogEntry[]
+  /** Tools hidden from the model, keyed by server name. */
+  disabledTools: Readonly<Record<string, readonly string[]>>
 }
 
 /** Schemastery schema for loader-validated configuration. */
@@ -139,6 +148,7 @@ export const Config: z<Config> = z.object({
   writeVerifyTimeoutMs: z.number().min(100).max(30_000).default(3_000),
   backupCount: z.number().min(1).max(MAX_BACKUP_COUNT).default(DEFAULT_BACKUP_COUNT),
   catalogEntries: z.array(z.any()).default([]),
+  disabledTools: z.dict(z.array(z.string())).default({}),
 })
 
 /**
@@ -210,6 +220,7 @@ export function resolveConfig(config: Config | undefined): ResolvedConfig {
     throw new Error(`dsh-mcp-workbench: config.catalogEntries invalid — ${catalogIssues.map(issue => `${issue.field}: ${issue.text}`).join(' ')}`)
   }
   const catalogEntries = catalogOverlay as CatalogEntry[]
+  const disabledTools = resolveDisabledTools(config?.disabledTools)
   return Object.freeze({
     probeEnabled,
     probeTimeoutMs,
@@ -226,5 +237,42 @@ export function resolveConfig(config: Config | undefined): ResolvedConfig {
     writeVerifyTimeoutMs,
     backupCount,
     catalogEntries,
+    disabledTools,
   })
 }
+
+/**
+ * Validate the `disabledTools` map: server names and bare tool names, no
+ * `mcp__` prefix (the prefix is derived, not configured).
+ *
+ * @param raw - the raw map from config.
+ * @returns a frozen copy with duplicates removed.
+ * @throws when a key or a tool name is not a plain name.
+ */
+export function resolveDisabledTools(raw: unknown): Readonly<Record<string, readonly string[]>> {
+  if (raw === undefined) return Object.freeze({})
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    throw new TypeError('dsh-mcp-workbench: config.disabledTools must be an object of server name → tool names')
+  }
+  const out: Record<string, readonly string[]> = {}
+  for (const [serverName, names] of Object.entries(raw as Record<string, unknown>)) {
+    if (!NAME_PATTERN.test(serverName)) {
+      throw new Error(`dsh-mcp-workbench: config.disabledTools has an invalid server name ${JSON.stringify(serverName)} (expected [A-Za-z0-9_-]{1,32})`)
+    }
+    if (!Array.isArray(names)) {
+      throw new TypeError(`dsh-mcp-workbench: config.disabledTools.${serverName} must be an array of tool names`)
+    }
+    const seen = new Set<string>()
+    for (const name of names) {
+      if (typeof name !== 'string' || !NAME_PATTERN.test(name) || name.startsWith('mcp__')) {
+        throw new Error(`dsh-mcp-workbench: config.disabledTools.${serverName} has an invalid tool name ${JSON.stringify(name)} (expected the bare name, without the mcp__ prefix)`)
+      }
+      seen.add(name)
+    }
+    out[serverName] = Object.freeze([...seen])
+  }
+  return Object.freeze(out)
+}
+
+/** Server names and raw tool names share the client's namespace charset. */
+export const NAME_PATTERN = /^[A-Za-z0-9_-]{1,64}$/

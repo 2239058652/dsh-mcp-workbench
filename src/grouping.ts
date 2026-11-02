@@ -39,9 +39,7 @@ export interface ToolSchemaFace {
   readonly name: string
   /** One-line model-facing description; may be absent on hostile or partial input. */
   readonly description?: string
-}
-
-/**
+}/**
  * Split one registered tool schema list into per-server groups.
  *
  * @param schemas - the `ctx.tools.schemas()` snapshot (or any subset).
@@ -70,7 +68,7 @@ export function groupMcpTools(
     const description = typeof schema.description === 'string' ? schema.description : ''
     const group = groups.get(key)
       ?? { serverName: key, configured: server !== undefined, tools: [] as McpToolView[] }
-    group.tools.push({ name, description })
+    group.tools.push({ name, description, hidden: false })
     groups.set(key, group)
   }
   return [...groups.values()]

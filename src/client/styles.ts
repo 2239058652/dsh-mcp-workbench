@@ -392,11 +392,13 @@ const PANEL_CSS = `
   border-color: var(--dsw-alias-border-l3);
   background: var(--dsw-alias-bg-layer-2);
 }
+[data-dsh-mcp-workbench] .dmcp-tool[data-hidden='true'] .dmcp-tool-name {
+  opacity: 0.55;
+}
 [data-dsh-mcp-workbench] .dmcp-tool-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: space-between;  gap: 8px;
 }
 [data-dsh-mcp-workbench] .dmcp-tool-name {
   overflow-wrap: anywhere;
@@ -405,6 +407,22 @@ const PANEL_CSS = `
   flex-shrink: 0;
   padding: 1px 8px;
   font-size: 0.85em;
+}
+/* Visibility toggle: unchecked = the tool's schema leaves the prompt. */
+[data-dsh-mcp-workbench] .dmcp-tool-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 0 8px;
+  font-size: 0.85em;
+  opacity: 0.85;
+  cursor: pointer;
+  white-space: nowrap;
+}
+[data-dsh-mcp-workbench] .dmcp-tool-toggle input {
+  margin: 0;
+  cursor: pointer;
 }
 [data-dsh-mcp-workbench] .dmcp-try {
   display: flex;

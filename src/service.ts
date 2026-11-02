@@ -44,12 +44,15 @@ import {
   type McpLoaderRow,
 } from './aggregate.ts'
 import { groupMcpTools } from './grouping.ts'
+import { hiddenToolNames, restrictAgentTools, toggleHidden } from './disable.ts'
+import { NAME_PATTERN } from './config.ts'
+import type { ToolVisibilityResult } from './wire.ts'
 import {
   renderPatchFragment,
+  renderConfigOverride,
   resolvePatchOp,
   type McpPatchResolution,
-  type ResolvedPatchOp,
-} from './patch.ts'
+  type ResolvedPatchOp,} from './patch.ts'
 import { appendPatchFragment } from './write.ts'
 import { createTrialCaller, validateTrialRequest, RESOURCE_TOOL_NAMES, RESOURCE_TOOL_SET, type McpAgentRegistryFace, type McpTrialRequest } from './trial.ts'
 import { probeJob, PROBE_KIND, type ProbeTarget } from './probe.ts'
@@ -153,6 +156,8 @@ export interface McpPanelServiceConfig {
   backupCount: number
   /** Merged recommended MCP server directory (built-in + user overlay). */
   catalog: readonly McpCatalogEntryView[]
+  /** Tools hidden from the model, keyed by server name. */
+  disabledTools: Readonly<Record<string, readonly string[]>>
 }
 
 /** Defaults for direct (non-Loader) service construction. */
@@ -170,6 +175,7 @@ const DEFAULT_SERVICE_CONFIG: McpPanelServiceConfig = {
   writeVerifyTimeoutMs: 3_000,
   backupCount: 5,
   catalog: [],
+  disabledTools: {},
 }
 
 /**
@@ -301,6 +307,14 @@ private readonly trialCaller = createTrialCaller()
     const schemas = this.ctx.tools.schemas()
     const configuredNames = rows.map(row => serverNameOf(row.config, `entry:${row.entryId}`))
     const groups = groupMcpTools(schemas, configuredNames)
+    // Mark the tools this plugin hides from the model. The mask itself is
+    // applied per agent scope (see ./disable.ts); the flag is purely display,
+    // so the panel can still list and trial a hidden tool.
+    const hiddenNames = new Set(hiddenToolNames(this.config.disabledTools))
+    const markedGroups = groups.map(group => ({
+      ...group,
+      tools: group.tools.map(tool => ({ ...tool, hidden: hiddenNames.has(tool.name) })),
+    }))
     // Resources are bridged by the SHIPPED `@deepseek-ai/dsh-mcp-resources`
     // service (mounted by the base bundle): the official client registers each
     // connection's provider, and the package owns the three shared tools. The
@@ -314,7 +328,7 @@ private readonly trialCaller = createTrialCaller()
       && RESOURCE_TOOL_NAMES.every(name => registeredResourceTools.includes(name))
     return aggregateSnapshot({
       rows,
-      groups,
+      groups: markedGroups,
       facts: {
         statuses: this.statuses,
         reconnects: this.reconnects,
@@ -385,6 +399,75 @@ private readonly trialCaller = createTrialCaller()
       ops: 1,
     }
   }
+
+  /**
+   * Persist one tool's model visibility and apply it to live agents.
+   *
+   * Writes the plugin's OWN config row (the mcp-client row has no such field):
+   * reads the profile patch layer, drops unrelated appended blocks by locating
+   * this plugin's row, and appends an id-targeted override carrying the whole
+   * `disabledTools` map. The append-only dialect replaces the entire config, so
+   * every other key of this plugin's row is restated.
+   *
+   * @param serverName - configured MCP namespace.
+   * @param toolName - bare tool name (no `mcp__` prefix).
+   * @param hidden - true to hide from the model, false to show it again.
+   * @returns the applied change with a human note.
+   */
+  async setToolHidden(serverName: string, toolName: string, hidden: boolean): Promise<ToolVisibilityResult> {
+    if (!this.config.writeEnabled) {
+      throw new Error('dsh-mcp-workbench: config writes are disabled (config.writeEnabled: false) — edit the file by hand')
+    }
+    if (!NAME_PATTERN.test(serverName) || !NAME_PATTERN.test(toolName)) {
+      throw new Error(`dsh-mcp-workbench: "${serverName}"/"${toolName}" is not a valid server/tool name pair`)
+    }
+    const file = this.patchFile()
+    if (file === null) {
+      throw new Error('dsh-mcp-workbench: the profile patch path is unknown (no ctx.baseUrl) — cannot write')
+    }
+    const next = toggleHidden(this.config.disabledTools, serverName, toolName, hidden)
+    const row = this.pluginRow()
+    if (row === null) {
+      throw new Error('dsh-mcp-workbench: this plugin\'s own loader row was not found — cannot persist the tool filter')
+    }
+    const fragment = renderConfigOverride(row.entryId, { ...row.config, disabledTools: next })
+    await appendPatchFragment(file, fragment, this.config.backupCount)
+    // Live agents first: a model call admitted after this point already reads
+    // the narrowed schema set. New agents pick it up in disable.ts.
+    const hiddenNames = hiddenToolNames(next)
+    const known = new Set(this.ctx.tools.schemas().map(schema => schema.name))
+    for (const agent of this.agents().list()) restrictAgentTools(agent.ctx, hiddenNames, known)
+    const total = Object.values(next).reduce((sum, names) => sum + names.length, 0)
+    return {
+      serverName,
+      toolName,
+      hidden,
+      note: hidden
+        ? `"${toolName}" is now hidden from the model (${total} tool(s) hidden in total). Applies to this session immediately; the config override is appended to the profile patch layer.`
+        : `"${toolName}" is visible to the model again (${total} tool(s) still hidden).`,
+    }
+  }
+
+  /** This plugin's own loader row (entry id + config), or null. */
+  private pluginRow(): { entryId: string; config: Record<string, unknown> } | null {
+    for (const entry of this.ctx.loader.entries()) {
+      if (entry.options.name !== PLUGIN_MODULE) continue
+      const config = entry.options.config
+      return {
+        entryId: entry.options.id,
+        config: typeof config === 'object' && config !== null ? config as Record<string, unknown> : {},
+      }
+    }
+    return null
+  }
+
+  /** The live agent registry face. */
+  private agents(): { list: () => Iterable<{ ctx: Context }> } {
+    const agents = this.ctx.get('agents') as { list: () => Iterable<{ ctx: Context }> } | undefined
+    if (agents === undefined) throw new Error('dsh-mcp-workbench: ctx.agents is not composed — cannot apply a tool filter')
+    return agents
+  }
+
 
   /**
    * Append one CRUD operation to the profile patch layer, approval-gated.
@@ -761,6 +844,9 @@ private readonly trialCaller = createTrialCaller()
     return join(dir, PROFILE_PATCH_FILENAME)
   }
 }
+
+/** This plugin's own loader module name (the row the console edits). */
+const PLUGIN_MODULE = 'dsh-mcp-workbench'
 
 /** Read the optional agent registry face from a context. */
 function agentsOf(ctx: Context): McpAgentRegistryFace | undefined {

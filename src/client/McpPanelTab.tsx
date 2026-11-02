@@ -16,6 +16,7 @@ import type {
   PatchWriteResult,
   ProbeStarted,
   ReloadResult,
+  ToolVisibilityResult,
 } from '../wire.ts'
 
 /** Registration-side injected face: the console RPCs (RemoteResult already unwrapped). */
@@ -32,6 +33,8 @@ export interface McpPanelTabInjected {
   callTool: (requestJson: string) => Promise<McpTrialResultWire>
   /** Restart one mcp-client row (dispose + start); no config is written. */
   reloadServer: (serverName: string) => Promise<ReloadResult>
+  /** Hide or show one tool to the model (persists this plugin's config). */
+  setToolHidden: (serverName: string, toolName: string, hidden: boolean) => Promise<ToolVisibilityResult>
 }
 
 /** Full component props assembled by the slot renderer (this is a `main` panel). */
@@ -151,10 +154,14 @@ function diagnosticText(code: string, text: string, t: McpPanelTabProps['t']): s
 }
 
 /** Render the MCP management console page. */
-export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool, reloadServer, t }: McpPanelTabProps): ReactNode {
+export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool, reloadServer, setToolHidden, t }: McpPanelTabProps): ReactNode {
   const [request, setRequest] = useState(0)
   const [probeError, setProbeError] = useState<string | null>(null)
   const [reloadState, setReloadState] = useState<{ server: string; busy: boolean; error: string | null; note: string | null } | null>(null)
+  /** Per-tool busy flags while a visibility change is in flight. */
+  const [hiddenBusy, setHiddenBusy] = useState<Record<string, boolean>>({})
+  /** Last visibility-change failure, shown above the tool list. */
+  const [hiddenError, setHiddenError] = useState<string | null>(null)
   /** Header refresh phase: idle, probing, or restarting the dead rows. */
   const [refreshPhase, setRefreshPhase] = useState<'idle' | 'probing' | 'restarting'>('idle')
   /** Auxiliary dialog: the probe log or the capabilities sheet. */
@@ -327,6 +334,24 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
     )
   }
 
+  /** Hide or show one tool: persist the filter, then re-read so the row updates. */
+  const doToggleHidden = (serverName: string, toolName: string, hidden: boolean): void => {
+    const bareName = toolName.replace(`mcp__${serverName}__`, '')
+    const key = trialKey(serverName, toolName)
+    setHiddenBusy(current => ({ ...current, [key]: true }))
+    setHiddenError(null)
+    void Promise.resolve().then(() => setToolHidden(serverName, bareName, hidden)).then(
+      () => {
+        setHiddenBusy(current => ({ ...current, [key]: false }))
+        reload()
+      },
+      (failure: unknown) => {
+        setHiddenBusy(current => ({ ...current, [key]: false }))
+        setHiddenError(messageOf(failure))
+      },
+    )
+  }
+
   /**
    * Refresh everything: re-read the snapshot, probe every enabled
    * streamable-http row (one HTTP handshake each, harmless), then restart the
@@ -415,6 +440,7 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
             {t('tools')} · {row.view.tools.length}
             {stale ? <span className="dmcp-warn-text"> （{t('staleTools').replace('{n}', String(row.view.tools.length))}）</span> : null}
           </h4>
+          {hiddenError !== null ? <p className="dmcp-error-text">{hiddenError}</p> : null}
           {row.view.tools.length === 0 ? <p className="dmcp-status">{t('noTools')}</p> : (
             <>
               {row.view.tools.length > 6 ? (
@@ -438,9 +464,20 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
                   const trialState = trials[key] ?? EMPTY_TRIAL
                   const isOpen = openTool === tool.name
                   return (
-                    <li key={tool.name} className="dmcp-tool" data-open={isOpen ? 'true' : undefined}>
+                    <li key={tool.name} className="dmcp-tool" data-open={isOpen ? 'true' : undefined} data-hidden={tool.hidden ? 'true' : undefined}>
                       <div className="dmcp-tool-row">
                         <code className="dmcp-tool-name">{tool.name}</code>
+                        <label className="dmcp-tool-toggle" title={t('toolVisibleHint')}>
+                          <input
+                            type="checkbox"
+                            checked={!tool.hidden}
+                            disabled={hiddenBusy[key] === true}
+                            onChange={(event) => {
+                              doToggleHidden(serverName, tool.name, !event.currentTarget.checked)
+                            }}
+                          />
+                          <span>{tool.hidden ? t('toolHidden') : t('toolVisible')}</span>
+                        </label>
                         {trialEnabled ? (
                           <button
                             type="button"
