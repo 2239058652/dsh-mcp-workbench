@@ -6,9 +6,8 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { hiddenToolNames, restrictAgentTools } from '../src/disable.ts'
+import { hiddenToolNames, restrictAgentTools, toggleHidden } from '../src/disable.ts'
 import { resolveConfig, resolveDisabledTools } from '../src/config.ts'
-import { toggleHidden } from '../src/disable.ts'
 
 /** Minimal context face `restrictAgentTools` reads. */
 function fakeContext(): { ctx: never; calls: { deny: readonly string[] }[] } {
@@ -88,5 +87,15 @@ describe('toggleHidden', () => {
     const start = { a: ['x'], b: ['y'] }
     expect(toggleHidden(start, 'a', 'x', true)).toEqual({ a: ['x'], b: ['y'] })
     expect(toggleHidden(start, 'a', 'z', true)).toEqual({ a: ['x', 'z'], b: ['y'] })
+  })
+
+  it('accumulates when the caller feeds the previous result back in', () => {
+    // The service keeps its own live map as the baseline: feeding the returned
+    // value back in is what makes the second click see the first one. Computing
+    // every toggle from the mounted config instead re-appended the same block.
+    let live: Readonly<Record<string, readonly string[]>> = {}
+    live = toggleHidden(live, 'parallel', 'web_search', true)
+    live = toggleHidden(live, 'parallel', 'web_fetch', true)
+    expect(live).toEqual({ parallel: ['web_search', 'web_fetch'] })
   })
 })

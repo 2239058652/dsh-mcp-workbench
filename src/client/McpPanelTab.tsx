@@ -340,14 +340,30 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
     const key = trialKey(serverName, toolName)
     setHiddenBusy(current => ({ ...current, [key]: true }))
     setHiddenError(null)
+    // Flip the row now: the host keeps serving from the pre-write snapshot until
+    // the loader hot-reloads the patch layer, so a plain re-read right after the
+    // write would still show the old state and read as "nothing happened".
+    const before = state.status === 'ready' ? state.snapshot : null
+    if (before !== null) {
+      setState({
+        status: 'ready',
+        snapshot: {
+          ...before,
+          servers: before.servers.map(row => row.serverName === serverName
+            ? { ...row, tools: row.tools.map(tool => tool.name === toolName ? { ...tool, hidden } : tool) }
+            : row),
+        },
+      })
+    }
     void Promise.resolve().then(() => setToolHidden(serverName, bareName, hidden)).then(
       () => {
         setHiddenBusy(current => ({ ...current, [key]: false }))
-        reload()
       },
       (failure: unknown) => {
         setHiddenBusy(current => ({ ...current, [key]: false }))
         setHiddenError(messageOf(failure))
+        // Roll the optimistic flip back: the write did not land.
+        if (before !== null) setState({ status: 'ready', snapshot: before })
       },
     )
   }

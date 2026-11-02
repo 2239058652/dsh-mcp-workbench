@@ -202,7 +202,14 @@ function isAgentRunning(agent: unknown): boolean {
 export class McpPanelService extends TypertRemoteService {
   static inject = ['loader', 'tools']
 
-  /** Latest upstream payload per server namespace. */
+  /**
+   * Tools hidden from the model. Seeded from config at mount and kept current
+   * by {@link setToolHidden}: the loader hot-reloads the patch layer, but this
+   * instance keeps serving requests in the meantime, so a write that only
+   * touched the file would leave the panel (and the next click's baseline)
+   * reading the pre-write value.
+   */
+  private hiddenTools: Readonly<Record<string, readonly string[]>>
   private readonly statuses = new Map<string, McpServerStatus>()
   /** Cumulative reconnect attempts observed per server namespace. */
   private readonly reconnects = new Map<string, number>()
@@ -228,6 +235,7 @@ private readonly trialCaller = createTrialCaller()
    */
   constructor(ctx: Context, private readonly config: McpPanelServiceConfig = DEFAULT_SERVICE_CONFIG) {
     super(ctx, 'mcpWorkbench')
+    this.hiddenTools = config.disabledTools
     if (config.passiveProbeEnabled) {
       const timer = setInterval(() => { void this.runPassiveProbes() }, config.passiveProbeIntervalMs)
       // An armed probe timer must never hold the process open on its own.
@@ -310,7 +318,7 @@ private readonly trialCaller = createTrialCaller()
     // Mark the tools this plugin hides from the model. The mask itself is
     // applied per agent scope (see ./disable.ts); the flag is purely display,
     // so the panel can still list and trial a hidden tool.
-    const hiddenNames = new Set(hiddenToolNames(this.config.disabledTools))
+    const hiddenNames = new Set(hiddenToolNames(this.hiddenTools))
     const markedGroups = groups.map(group => ({
       ...group,
       tools: group.tools.map(tool => ({ ...tool, hidden: hiddenNames.has(tool.name) })),
@@ -425,13 +433,28 @@ private readonly trialCaller = createTrialCaller()
     if (file === null) {
       throw new Error('dsh-mcp-workbench: the profile patch path is unknown (no ctx.baseUrl) — cannot write')
     }
-    const next = toggleHidden(this.config.disabledTools, serverName, toolName, hidden)
+    // Baseline is the in-memory value, which setToolHidden keeps current: the
+    // loader picks the write up asynchronously, and computing from the mounted
+    // config would re-append the same block on every click and drop earlier
+    // toggles in between.
+    const next = toggleHidden(this.hiddenTools, serverName, toolName, hidden)
+    if (sameHiddenMap(next, this.hiddenTools)) {
+      return {
+        serverName,
+        toolName,
+        hidden,
+        note: `"${toolName}" is already ${hidden ? 'hidden' : 'visible'} — nothing to write.`,
+      }
+    }
     const row = this.pluginRow()
     if (row === null) {
       throw new Error('dsh-mcp-workbench: this plugin\'s own loader row was not found — cannot persist the tool filter')
     }
     const fragment = renderConfigOverride(row.entryId, { ...row.config, disabledTools: next })
     await appendPatchFragment(file, fragment, this.config.backupCount)
+    // Adopt the new map before returning: `status()` and the next click both
+    // read it, so the panel reflects the write without waiting for a reload.
+    this.hiddenTools = next
     // Live agents first: a model call admitted after this point already reads
     // the narrowed schema set. New agents pick it up in disable.ts.
     const hiddenNames = hiddenToolNames(next)
@@ -847,6 +870,30 @@ private readonly trialCaller = createTrialCaller()
 
 /** This plugin's own loader module name (the row the console edits). */
 const PLUGIN_MODULE = 'dsh-mcp-workbench'
+
+/**
+ * Structural equality for two `server → tool names` maps (order-insensitive
+ * inside a server), so a toggle that changes nothing writes nothing.
+ *
+ * @param left - one map.
+ * @param right - the other map.
+ * @returns true when both name exactly the same tools.
+ */
+function sameHiddenMap(
+  left: Readonly<Record<string, readonly string[]>>,
+  right: Readonly<Record<string, readonly string[]>>,
+): boolean {
+  const leftKeys = Object.keys(left).filter(key => (left[key] ?? []).length > 0)
+  const rightKeys = Object.keys(right).filter(key => (right[key] ?? []).length > 0)
+  if (leftKeys.length !== rightKeys.length) return false
+  for (const key of leftKeys) {
+    const a = new Set(left[key])
+    const b = new Set(right[key] ?? [])
+    if (a.size !== b.size) return false
+    for (const name of a) if (!b.has(name)) return false
+  }
+  return true
+}
 
 /** Read the optional agent registry face from a context. */
 function agentsOf(ctx: Context): McpAgentRegistryFace | undefined {
