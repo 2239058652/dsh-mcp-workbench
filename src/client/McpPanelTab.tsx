@@ -1,6 +1,6 @@
 /** The MCP console page: a server list plus dialogs for detail, trial and CRUD. */
 
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { InjectFace, PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import { presentMcpPanel, probeBadge, summarizePanel, type BadgeTone, type PresentedServerRow } from './present.ts'
 import { ServerEditor } from './ServerEditor.tsx'
@@ -199,6 +199,30 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
     )
     return () => { current = false }
   }, [status, request])
+
+  /**
+   * Probe once when the panel is first opened.
+   *
+   * The dot's colour comes from a probe (the upstream seam is optional and an
+   * HTTP transport has no heartbeat), so without this every row would read
+   * grey until the user pressed Refresh. This runs PROBES ONLY: a restart is
+   * reserved for the explicit Refresh, which keeps an auto-open from bouncing
+   * every unreachable row (an IDE that is simply closed, for instance).
+   */
+  const autoProbed = useRef(false)
+  useEffect(() => {
+    if (autoProbed.current || state.status !== 'ready') return
+    autoProbed.current = true
+    const targets = state.snapshot.servers.filter(row =>
+      row.transport === 'streamable-http' && row.enabled && row.entryId !== '')
+    if (targets.length === 0) return
+    void Promise.allSettled(targets.map(row => Promise.resolve().then(() => probe(row.serverName))))
+      .then(() => Promise.resolve().then(() => status()))
+      .then(
+        (snapshot) => { setState({ status: 'ready', snapshot }) },
+        () => { /* the explicit Refresh reports probe failures; the open path stays quiet */ },
+      )
+  }, [probe, state, status])
 
   // Optional polling: the host suggests an interval through the snapshot
   // (0 = on demand only). Errors during polling keep the last good snapshot.
