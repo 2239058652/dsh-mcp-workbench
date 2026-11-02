@@ -445,12 +445,19 @@ export function renderPatchFragment(op: ResolvedPatchOp, now = new Date()): stri
  * @param now - clock for the comment line (tests pin it).
  * @returns the YAML block, no trailing newline.
  */
+/**
+ * Marker comment the console writes above the config override it owns. The
+ * writer matches this prefix to find and replace its own previous blocks; it
+ * is deliberately specific so nothing else in the file can match.
+ */
+export const TOOL_FILTER_MARKER = '# dsh-mcp-workbench: update tool filter'
+
 export function renderConfigOverride(
   entryId: string,
   config: Record<string, unknown>,
   now = new Date(),
 ): string {
-  const lines: string[] = [`# dsh-mcp-workbench: update tool filter (${now.toISOString().slice(0, 10)})`]
+  const lines: string[] = [`${TOOL_FILTER_MARKER} (${now.toISOString().slice(0, 10)})`]
   lines.push(`- id: ${yamlScalar(entryId)}`, `  name: ${yamlScalar(PLUGIN_MODULE)}`)
   emitBlock(lines, '  config:', config, 4)
   return lines.join('\n')

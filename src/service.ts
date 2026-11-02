@@ -50,10 +50,11 @@ import type { ToolVisibilityResult } from './wire.ts'
 import {
   renderPatchFragment,
   renderConfigOverride,
+  TOOL_FILTER_MARKER,
   resolvePatchOp,
   type McpPatchResolution,
   type ResolvedPatchOp,} from './patch.ts'
-import { appendPatchFragment } from './write.ts'
+import { appendPatchFragment, replaceOwnedBlock } from './write.ts'
 import { createTrialCaller, validateTrialRequest, RESOURCE_TOOL_NAMES, RESOURCE_TOOL_SET, type McpAgentRegistryFace, type McpTrialRequest } from './trial.ts'
 import { probeJob, PROBE_KIND, type ProbeTarget } from './probe.ts'
 import { sanitizeText } from './sanitize.ts'
@@ -451,7 +452,10 @@ private readonly trialCaller = createTrialCaller()
       throw new Error('dsh-mcp-workbench: this plugin\'s own loader row was not found — cannot persist the tool filter')
     }
     const fragment = renderConfigOverride(row.entryId, { ...row.config, disabledTools: next })
-    await appendPatchFragment(file, fragment, this.config.backupCount)
+    // Replace this plugin's own previous filter block rather than appending:
+    // the filter is state, not an event, so appending per click grew the file
+    // without bound. Only blocks carrying our marker are removed.
+    await replaceOwnedBlock(file, TOOL_FILTER_MARKER, fragment, this.config.backupCount)
     // Adopt the new map before returning: `status()` and the next click both
     // read it, so the panel reflects the write without waiting for a reload.
     this.hiddenTools = next

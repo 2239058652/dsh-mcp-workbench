@@ -9,7 +9,7 @@ import { mkdtemp, readFile, readdir, rmdir, unlink, writeFile } from 'node:fs/pr
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { afterEach, describe, expect, it } from 'vitest'
-import { appendPatchFragment } from '../src/write.ts'
+import { appendPatchFragment, replaceOwnedBlock } from '../src/write.ts'
 
 const FRAGMENT = "- insert:\n    - id: mcp-x\n      name: '@deepseek-ai/dsh-mcp-client'\n      config:\n        serverName: x\n        transport: stdio\n        command: npx\n"
 
@@ -79,5 +79,43 @@ describe('appendPatchFragment', () => {
     }
     const backups = (await readdir(dir)).filter(name => name.startsWith('cordis.patch.yml.bak-'))
     expect(backups.length).toBe(3)
+  })
+})
+
+describe('replaceOwnedBlock', () => {
+  const MARKER = '# dsh-mcp-workbench: update tool filter'
+  const block = (tools: readonly string[]): string =>
+    `${MARKER} (2026-11-02)\n- id: mcp-workbench\n  name: dsh-mcp-workbench\n  config:\n    disabledTools:\n      parallel:\n${tools.map(tool => `        - ${tool}\n`).join('')}`
+
+  it('keeps exactly one own block no matter how many writes happened', async () => {
+    const dir = await tempDir()
+    const file = join(dir, 'cordis.patch.yml')
+    await writeFile(file, '# user comment\n- id: other\n  config:\n    keep: me\n', 'utf8')
+    await replaceOwnedBlock(file, MARKER, block(['web_search']), 5)
+    await replaceOwnedBlock(file, MARKER, block(['web_search', 'web_fetch']), 5)
+    const content = await readFile(file, 'utf8')
+    const occurrences = content.split(MARKER).length - 1
+    expect(occurrences).toBe(1)
+    // The newest state wins, and the earlier tool is gone with its block.
+    expect(content).toContain('- web_fetch')
+    expect(content).not.toContain('- web_search')
+  })
+
+  it('leaves content it did not write untouched', async () => {
+    const dir = await tempDir()
+    const file = join(dir, 'cordis.patch.yml')
+    await writeFile(file, '# keep this comment\n- id: other\n  config:\n    keep: me\n', 'utf8')
+    await replaceOwnedBlock(file, MARKER, block(['web_search']), 5)
+    const content = await readFile(file, 'utf8')
+    expect(content.startsWith('# keep this comment\n- id: other\n  config:\n    keep: me\n')).toBe(true)
+  })
+
+  it('collapses several older own blocks into one', async () => {
+    const dir = await tempDir()
+    const file = join(dir, 'cordis.patch.yml')
+    await writeFile(file, `${block(['a'])}\n${block(['a', 'b'])}\n${block(['a', 'b', 'c'])}\n`, 'utf8')
+    const { replaced } = await replaceOwnedBlock(file, MARKER, block(['b']), 5)
+    expect(replaced).toBe(3)
+    expect((await readFile(file, 'utf8')).split(MARKER).length - 1).toBe(1)
   })
 })
