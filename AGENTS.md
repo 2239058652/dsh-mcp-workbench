@@ -43,6 +43,8 @@ Schema in `src/config.ts` (Schemastery, fail-loud bounds, explicit `resolveConfi
 
 `node scripts/release.mjs <x.y.z>` bumps `package.json` (and the hardcoded probe `clientInfo.version` in `src/probe.ts`), stamps the `## [Unreleased]` CHANGELOG section to `[<x.y.z>] - <UTC date>`, re-runs the gate, commits, and tags `v<x.y.z>` locally — never pushes. Push with `git push origin main --follow-tags`; the `release` workflow (release.yml) then gates again and creates the GitHub Release from the CHANGELOG section (`scripts/changelog-section.mjs`). No npm publish — this fork ships over the git channel only. Tags are `v<x.y.z>`.
 
+**Before running it, check the CHANGELOG by hand.** The stamper replaces the FIRST `## [Unreleased]` it finds and validates neither its position nor its content: the fork inherited an empty one deep in the 0.6.x history, so a release once stamped that one and shipped with an empty Release body. Confirm the heading sits at the top of the file with the entry already written under it, then verify the result with `node scripts/changelog-section.mjs <x.y.z>`. A tag cannot be moved once the release workflow has run, so a bad stamp means hand-editing the GitHub Release.
+
 ## Docs
 
 - One Chinese README (`README.md`) — it is the GitHub landing page and the only README; the other language files were dropped with the fork.
