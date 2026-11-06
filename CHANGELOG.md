@@ -91,7 +91,7 @@ All notable changes to this project are documented in this file.
 - Correct the release date in the previous section, which was stamped with the literal string `undefined` by the release stamper. No content or behaviour change; the version is bumped only because npm will not republish an existing version.
 
 
-## [Unreleased]
+## [0.8.2] - 2026-11-06
 
 ## [0.6.21] - 2026-10-04
 
