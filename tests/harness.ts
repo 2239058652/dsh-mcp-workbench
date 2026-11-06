@@ -12,6 +12,7 @@ import type { Agent } from '@deepseek-ai/dsh-agent'
 import CommandRuntime from '@deepseek-ai/dsh-commands'
 import SessionStore, { SessionId, type Session } from '@deepseek-ai/dsh-session'
 import ToolRuntime from '@deepseek-ai/dsh-tools'
+import { ToolExecutionPipeline, executeToolBatch } from '@deepseek-ai/dsh-tools/pipeline'
 import type { McpLoaderRow } from '../src/aggregate.ts'
 import type { McpPanelService } from '../src/service.ts'
 
@@ -90,6 +91,28 @@ export interface Harness {
 }
 
 /**
+ * Minimal tool executor backed by the REAL shared pipeline.
+ *
+ * Since the 0.2.2 line `tools.execute()` delegates to a registered executor
+ * instead of running tools inline; without one it throws
+ * `ToolExecutorUnavailableError`. Production gets its executor from the bundle
+ * (`dsh-tool-*`); the harness supplies one that reuses the shipped pipeline, so
+ * a trial call still runs the tool body, its policy, and its post-execute hook
+ * exactly as it does in a real composition.
+ *
+ * @param ctx - the context the pipeline runs in (reads tools, approvals, ...).
+ * @returns the executor face.
+ */
+function pipelineExecutor(ctx: Context): import('@deepseek-ai/dsh-tools').ToolExecutor {
+  const pipeline = new ToolExecutionPipeline(ctx)
+  return {
+    describe: (tools: readonly unknown[]) => ({ schemas: tools, knownNames: [] }) as never,
+    execute: (input: import('@deepseek-ai/dsh-tools').ToolBatchInput) =>
+      executeToolBatch(input, pipeline, () => 1),
+  } as never
+}
+
+/**
  * Mount real session/tools/commands services, a fake loader, and this plugin.
  *
  * @param entries - fake loader entries (mcp-client rows and others).
@@ -103,6 +126,7 @@ export async function mountHarness(entries: FakeEntry[] = [], config: Record<str
   ctx.provide('systemPrompt', { tools: () => () => undefined, section: () => () => undefined } as never)
   await ctx.plugin(ToolRuntime)
   await ctx.plugin(CommandRuntime)
+  ctx.tools.setExecutor(pipelineExecutor(ctx))
   if (jobs !== undefined) ctx.provide('jobs', jobs as never)
   ctx.provide('loader', {
     entries: function* (): IterableIterator<FakeEntry> {
