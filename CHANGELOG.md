@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2] - 2026-11-06
+
+### 修复
+
+- **跟随 0.2.2 线的批次执行 API。** harness 把 `tools.execute()` 从单次调用改成接收一批 tool-call 块，这个改动已经进到稳定线 0.2.2-rc.1：面板里的「试用」会直接抛 `ToolExecutorUnavailableError`。现在改成发一个合成的 tool-call 块并取第一个结果，控制台依然一次只试一个工具。
+- **测试补齐 executor。** 同一条线上 `execute()` 不再内联执行工具，而是委托给已注册的 `ToolExecutor`；测试用的假上下文里没有，三个试用用例因此失败。测试改为构建官方 `ToolExecutionPipeline` 并注册，工具体、审批、post-execute 仍然照常运行——用桩会掩盖这条路径上的回归。
+
 ## [0.8.1] - 2026-11-02
 
 ### 修复
@@ -90,8 +97,6 @@ All notable changes to this project are documented in this file.
 
 - Correct the release date in the previous section, which was stamped with the literal string `undefined` by the release stamper. No content or behaviour change; the version is bumped only because npm will not republish an existing version.
 
-
-## [0.8.2] - 2026-11-06
 
 ## [0.6.21] - 2026-10-04
 
