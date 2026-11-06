@@ -19,7 +19,10 @@
  * @module dsh-mcp-workbench/trial
  */
 
-import type { ToolExecutionResult, ToolExecutionInput, ToolRuntime } from '@deepseek-ai/dsh-tools'
+import type { ToolExecutionResult, ToolRuntime } from '@deepseek-ai/dsh-tools'
+
+/** Argument of one `execute()` call: a batch since the 0.2.2 line. */
+type ToolBatch = Parameters<ToolRuntime['execute']>[0]
 
 /** Wire result of one trial call (lossless-JSON scalar payload). */
 export interface McpTrialResult {
@@ -145,19 +148,23 @@ export function createTrialCaller() {
         throw new Error(`tool "${toolName}" is not registered — the server may be down or its sync failed`)
       }
       const agent = sessionId === undefined || sessionId === '' ? undefined : agents?.get(sessionId)
-      const callId = `${TRIAL_CALL_PREFIX}-${++trialCounter}` as unknown as ToolExecutionInput['callId']
+      const callId = `${TRIAL_CALL_PREFIX}-${++trialCounter}` as unknown as ToolBatch['calls'][number]['id']
       const started = Date.now()
-      const execution: ToolExecutionInput = {
-        callId,
-        name: toolName,
-        arguments: argumentsValue,
-        ...agent === undefined ? {} : { agent: agent as NonNullable<ToolExecutionInput['agent']> },
+      // One synthetic tool-call block IS the whole batch: the console trials a
+      // single tool, and this line's executor only accepts batches. The agent
+      // arrives as `unknown` from the registry face, so it is cast at the seam.
+      const batch = await tools.execute({
+        calls: [{ type: 'tool-call', id: callId, name: toolName, arguments: JSON.stringify(argumentsValue) }],
         signal: AbortSignal.timeout(limits.timeoutMs),
-      }
-      const result = await tools.execute(execution)
+        ...agent === undefined || agent === null
+          ? {}
+          : { agent: agent as NonNullable<ToolBatch['agent']> },
+      })
+      const outcome = batch.results[0]
+      if (outcome === undefined) throw new Error(`tool "${toolName}" returned no result`)
       const durationMs = Date.now() - started
-      const { json, truncated } = projectTrialResult(result, limits.maxResultChars)
-      return { callId: String(callId), isError: result.isError, truncated, durationMs, resultJson: json }
+      const { json, truncated } = projectTrialResult(outcome.result, limits.maxResultChars)
+      return { callId: String(callId), isError: outcome.result.isError, truncated, durationMs, resultJson: json }
     },
   }
 }
