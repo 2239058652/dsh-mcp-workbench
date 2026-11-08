@@ -7,6 +7,7 @@ import { ServerEditor } from './ServerEditor.tsx'
 import { Modal } from './Modal.tsx'
 import { PanelBoundary } from './PanelBoundary.tsx'
 import { restartTargets } from './restart.ts'
+import { autoProbeTargets } from './auto-probe.ts'
 import type {
   McpPanelSnapshot,
   McpProbeView,
@@ -201,22 +202,27 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
   }, [status, request])
 
   /**
-   * Probe once when the panel is first opened.
+   * Probe the rows this PROCESS has never probed, once, when the panel opens.
    *
    * The dot's colour comes from a probe (the upstream seam is optional and an
    * HTTP transport has no heartbeat), so without this every row would read
-   * grey until the user pressed Refresh. This runs PROBES ONLY: a restart is
-   * reserved for the explicit Refresh, which keeps an auto-open from bouncing
-   * every unreachable row (an IDE that is simply closed, for instance).
+   * grey until the user pressed Refresh. The host remembers each server's
+   * latest probe for the life of the process (`probeState` on the snapshot),
+   * so re-opening the panel re-probes NOTHING; a Host restart clears that
+   * memory and the next open probes once again. The explicit Refresh and the
+   * per-row probe button always probe for real and refresh the same memory.
+   *
+   * This runs PROBES ONLY: a restart is reserved for the explicit Refresh,
+   * which keeps an auto-open from bouncing every unreachable row (an IDE that
+   * is simply closed, for instance).
    */
   const autoProbed = useRef(false)
   useEffect(() => {
     if (autoProbed.current || state.status !== 'ready') return
     autoProbed.current = true
-    const targets = state.snapshot.servers.filter(row =>
-      row.transport === 'streamable-http' && row.enabled && row.entryId !== '')
+    const targets = autoProbeTargets(state.snapshot.servers)
     if (targets.length === 0) return
-    void Promise.allSettled(targets.map(row => Promise.resolve().then(() => probe(row.serverName))))
+    void Promise.allSettled(targets.map(serverName => Promise.resolve().then(() => probe(serverName))))
       .then(() => Promise.resolve().then(() => status()))
       .then(
         (snapshot) => { setState({ status: 'ready', snapshot }) },
@@ -430,6 +436,17 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
           } catch (failure: unknown) {
             setProbeError(messageOf(failure))
           }
+        }
+        // A restarted row re-handshook AFTER the sweep above, and the restart
+        // also dropped the probe facts this process held for it — so probe the
+        // restarted rows once more, or they would sit out the rest of the
+        // process with no liveness fact at all.
+        await Promise.allSettled(dead.map(serverName => Promise.resolve().then(() => probe(serverName))))
+        try {
+          const settled = await status()
+          setState({ status: 'ready', snapshot: settled })
+        } catch (failure: unknown) {
+          setProbeError(messageOf(failure))
         }
         setRefreshPhase('idle')
         reload()

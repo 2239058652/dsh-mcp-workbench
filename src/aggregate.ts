@@ -57,7 +57,12 @@ export interface McpStatusFacts {
   reconnects: ReadonlyMap<string, number>
   /** Epoch ms of the latest upstream event receipt per server. */
   observedAt: ReadonlyMap<string, number>
-  /** Passive-probe reachability facts per server (empty when probing is off). */
+  /**
+   * This process's latest probe verdict per server. Written by EVERY probe
+   * (panel action, `/mcp … probe`, the tool, and the passive loop) and cleared
+   * for a row that gets restarted. Process memory only: a Host restart empties
+   * it, which is exactly what the panel's open-once probe relies on.
+   */
   probeStates: ReadonlyMap<string, { state: 'reachable' | 'unreachable'; checkedAt: number }>
 }
 

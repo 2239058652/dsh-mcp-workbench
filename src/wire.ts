@@ -115,9 +115,13 @@ export interface McpServerView {
   connectedAt: number | null
   /** Epoch ms when this process last received an upstream status event; `null` without one. */
   observedAt: number | null
-  /** Passive-probe reachability (`null` = probing disabled or never run). */
+  /**
+   * This process's latest probe verdict for the row (`null` = never probed
+   * this process). Cleared when a row is restarted, so the panel never wears a
+   * pre-restart verdict.
+   */
   probeState: 'reachable' | 'unreachable' | null
-  /** Epoch ms of the latest passive-probe settlement; `null` without one. */
+  /** Epoch ms of the latest probe settlement this process; `null` without one. */
   probeCheckedAt: number | null
   /** Where the connection fields came from. */
   statusSource: McpStatusSource

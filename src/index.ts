@@ -137,7 +137,7 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
   ctx.inject(['jobs'], (scope) => {
     scope.effect(() => scope.jobs.attachController('dsh-mcp-workbench'), 'dsh-mcp-workbench: jobs controller')
     if (resolved.probeEnabled) {
-      scope.effect(() => scope.tools.register(mcpProbeTool(service, scope.jobs, resolved.probeTimeoutMs)), 'dsh-mcp-workbench: probe tool')
+      scope.effect(() => scope.tools.register(mcpProbeTool(service)), 'dsh-mcp-workbench: probe tool')
     }
   })
 }

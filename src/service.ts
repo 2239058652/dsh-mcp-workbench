@@ -11,7 +11,10 @@
  * - `ctx.tools.schemas()` / `ctx.tools.execute()` — registered `mcp__*` tools
  *   and the official execution pipeline (permission + approval + guards).
  * - the shipped upstream `mcp/status` seam — observed via {@link observe}.
- * - `ctx.jobs` — unowned `mcp-probe` background jobs (panel-only results).
+ * - `ctx.jobs` — unowned `mcp-probe` background jobs (panel-only results),
+ *   retired from the registry the moment they settle: an unowned job is
+ *   visible to EVERY session's job list, so settled probes would accumulate
+ *   in a process-lifetime list the panel's own cap cannot bound.
  * - `ctx.approval` / `ctx.agents` — feature-detected approval routing.
  *
  * Connection status is reported honestly: without upstream observations the
@@ -56,7 +59,7 @@ import {
   type ResolvedPatchOp,} from './patch.ts'
 import { appendPatchFragment, replaceOwnedBlock } from './write.ts'
 import { createTrialCaller, validateTrialRequest, RESOURCE_TOOL_NAMES, RESOURCE_TOOL_SET, type McpAgentRegistryFace, type McpTrialRequest } from './trial.ts'
-import { probeJob, PROBE_KIND, type ProbeTarget } from './probe.ts'
+import { probeJob, probeJobLabel, PROBE_KIND, PROBE_LABEL_PREFIX, startProbeJob, type ProbeTarget } from './probe.ts'
 import { sanitizeText } from './sanitize.ts'
 import { exportMcpConfigs, parseMcpConfigsImport } from './config-io.ts'
 import type { McpServerStatus, McpStatusPhase } from './upstream.ts'
@@ -94,9 +97,6 @@ const FIBER_PHASE: Record<number, McpFiberPhase> = {
 
 /** The profile patch-layer filename the console writes (append-only). */
 const PROFILE_PATCH_FILENAME = 'cordis.patch.yml'
-
-/** Label prefix written by the `mcp_probe` tool and the panel probe action. */
-const PROBE_LABEL_PREFIX = 'mcp_probe '
 
 /**
  * Supervisor phases this panel understands. Upstream payloads are
@@ -222,8 +222,23 @@ export class McpPanelService extends TypertRemoteService {
   private readonly countedAttempts = new Map<string, number>()
   /** Epoch ms of the latest upstream event receipt per server namespace. */
   private readonly observedAt = new Map<string, number>()
-  /** Latest passive-probe reachability per server namespace. */
+  /**
+   * This process's latest probe verdict per server namespace, written by EVERY
+   * probe (panel action, `/mcp … probe`, tool, and the passive loop) and
+   * cleared for a row that gets restarted. Process memory only — which is what
+   * the panel's open-once probe keys on.
+   */
   private readonly probeStates = new Map<string, { state: 'reachable' | 'unreachable'; checkedAt: number }>()
+  /**
+   * The panel's own probe log, newest last.
+   *
+   * Probe jobs are UNOWNED, so the registry lists them for every session; they
+   * are retired from it the moment they settle (see `startProbe`). The log is
+   * what the panel reads instead, which is also the only place a settled
+   * probe's outcome survives: it is capped at `maxProbes` and lives in memory
+   * for this process, exactly like the job registry itself.
+   */
+  private readonly probeLog: McpProbeView[] = []
 
 /** The trial caller with this instance's own callId sequence. */
 private readonly trialCaller = createTrialCaller()
@@ -375,16 +390,66 @@ private readonly trialCaller = createTrialCaller()
     if (target === undefined) {
       throw new Error(`dsh-mcp-workbench: "${serverName}" is not a configured MCP server (streamable-http or stdio)`)
     }
+    return this.startProbe(serverName, target)
+  }
+
+  /**
+   * Start one probe job for a server whose spec the caller already resolved,
+   * and file it in the panel's own probe log.
+   *
+   * The job is retired from the registry as soon as it settles: an unowned job
+   * is listed for EVERY session, so leaving settled probes registered would
+   * grow every conversation's background-job header for the life of the
+   * process — and the registry never drops an unowned record on its own.
+   * A timeout here is the panel's to bracket, so nothing long-lived is lost.
+   *
+   * @param serverName - configured namespace (also the log's row label).
+   * @param target - resolved probe spec, already validated by the caller.
+   * @returns the started job id and where the result lands.
+   */
+  startProbe(serverName: string, target: ProbeTarget): ProbeStarted {
     const jobs = this.ctx.get('jobs')
     if (jobs === undefined) {
       throw new Error('dsh-mcp-workbench: ctx.jobs is not composed — the panel probe action needs a background-job registry')
     }
-    const jobId = jobs.start({
-      kind: PROBE_KIND,
-      label: `mcp_probe ${serverName}`,
-      // Unowned: no model completion notice, readable by the panel only.
-      run: () => probeJob(target, this.config.probeTimeoutMs),
+    const startedAt = Date.now()
+    const jobId = startProbeJob(jobs, target, this.config.probeTimeoutMs, probeJobLabel(serverName), (id, settlement) => {
+      const settled: McpProbeView = {
+        id,
+        serverName,
+        status: settlement.status,
+        startedAt,
+        finishedAt: Date.now(),
+        detail: settlement.detail === '' ? null : sanitizeText(settlement.detail),
+      }
+      const index = this.probeLog.findIndex(view => view.id === id)
+      if (index === -1) this.probeLog.push(settled)
+      else this.probeLog[index] = settled
+      this.trimProbeLog()
+      // Every probe — panel action, `/mcp … probe`, or the tool — is also the
+      // row's liveness fact for THIS process. That is what lets the panel open
+      // without re-probing a row it already knows: the memory lives exactly as
+      // long as the Host process, so a restart (new ports, new network) reads
+      // as `null` again and the next open probes once.
+      this.probeStates.set(serverName, {
+        state: settlement.status === 'completed' ? 'reachable' : 'unreachable',
+        checkedAt: settled.finishedAt ?? startedAt,
+      })
     })
+    // A producer can settle before `start` even returns (a rejected fetch), in
+    // which case the settle callback already wrote the finished record; only
+    // file the placeholder when it did not.
+    if (!this.probeLog.some(view => view.id === jobId)) {
+      this.probeLog.push({
+        id: jobId,
+        serverName,
+        status: 'running',
+        startedAt,
+        finishedAt: null,
+        detail: null,
+      })
+      this.trimProbeLog()
+    }
     return {
       jobId,
       note: 'Probe results are panel-only: left sidebar → MCP.',
@@ -685,6 +750,16 @@ private readonly trialCaller = createTrialCaller()
       }
       entry.fiber?.dispose()
       await entry.init()
+      // The row just re-handshook: every probe fact this process holds about it
+      // describes the connection that was torn down. Dropping both keeps a
+      // restarted-but-healthy row from wearing the old red dot, and lets the
+      // panel probe it again instead of trusting a stale verdict.
+      this.probeStates.delete(wanted)
+      // In place: `probeLog` is a readonly binding, and a filtered copy would
+      // also break the running-placeholder bookkeeping.
+      for (let index = this.probeLog.length - 1; index >= 0; index -= 1) {
+        if (this.probeLog[index]?.serverName === wanted) this.probeLog.splice(index, 1)
+      }
       return {
         serverName: wanted,
         entryId: entry.options.id,
@@ -842,8 +917,14 @@ private readonly trialCaller = createTrialCaller()
     return spec?.kind === 'http' ? { url: spec.url, headers: { ...spec.headers } } : undefined
   }
 
-  /** Unowned `mcp-probe` background jobs, newest first, sanitized for display. */
-  private probeViews(): McpProbeView[] {
+  /** Drop the oldest log entries beyond the display cap. */
+  private trimProbeLog(): void {
+    const excess = this.probeLog.length - this.config.maxProbes
+    if (excess > 0) this.probeLog.splice(0, excess)
+  }
+
+  /** Unowned `mcp-probe` background jobs still registered, newest first, sanitized for display. */
+  private runningProbes(): McpProbeView[] {
     const jobs = this.ctx.get('jobs')
     if (jobs === undefined) return []
     return jobs
@@ -860,7 +941,29 @@ private readonly trialCaller = createTrialCaller()
         detail: job.detail === undefined ? null : sanitizeText(job.detail),
       }))
       .reverse()
-      .slice(0, this.config.maxProbes)
+  }
+
+  /**
+   * The panel's probe rows, newest first.
+   *
+   * The log is authoritative for anything this process started (its settled
+   * records are retired from the job registry, so the registry cannot answer
+   * for them), and the registry fills in probes that are still live. The merge
+   * is by job id, so a running probe appears once, not twice.
+   *
+   * @returns at most `maxProbes` rows.
+   */
+  private probeViews(): McpProbeView[] {
+    const seen = new Set<string>()
+    const merged: McpProbeView[] = []
+    for (const view of [...this.runningProbes(), ...this.probeLog]) {
+      if (seen.has(view.id)) continue
+      seen.add(view.id)
+      merged.push(view)
+    }
+    // One total order regardless of which source answered: newest first.
+    merged.sort((left, right) => right.startedAt - left.startedAt)
+    return merged.slice(0, this.config.maxProbes)
   }
 
   /** Absolute path of the profile patch layer the console writes, or null. */

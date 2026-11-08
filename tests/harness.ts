@@ -21,7 +21,9 @@ export interface FakeEntry {
   /** Loader-composed id (may carry an enclosing group prefix such as `include:`). */
   readonly id: string
   disabled: boolean
-  readonly fiber: { readonly state: number } | undefined
+  readonly fiber: { readonly state: number; dispose: () => void } | undefined
+  /** Restart hook the console's reconnect calls after disposing the fiber. */
+  init: () => Promise<void>
   readonly options: {
     readonly id: string
     readonly name: string
@@ -34,7 +36,8 @@ export function mcpRow(entryId: string, config: unknown, state = 2, disabled = f
   return {
     id: entryId,
     disabled,
-    fiber: state === -1 ? undefined : { state },
+    fiber: state === -1 ? undefined : { state, dispose: () => undefined },
+    init: async () => undefined,
     options: { id: entryId, name: '@deepseek-ai/dsh-mcp-client', config },
   }
 }
@@ -44,7 +47,8 @@ export function nestedMcpRow(groupId: string, entryId: string, config: unknown, 
   return {
     id: `${groupId}:${entryId}`,
     disabled,
-    fiber: state === -1 ? undefined : { state },
+    fiber: state === -1 ? undefined : { state, dispose: () => undefined },
+    init: async () => undefined,
     options: { id: entryId, name: '@deepseek-ai/dsh-mcp-client', config },
   }
 }

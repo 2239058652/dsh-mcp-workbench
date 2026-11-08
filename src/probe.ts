@@ -33,7 +33,7 @@ function killProcessTree(child: ReturnType<typeof spawn> | undefined): void {
 }
 
 import { execFile, spawn } from 'node:child_process'
-import type { JobHooks, JobOutcome, JobRegistry } from '@deepseek-ai/dsh-jobs'
+import type { JobHooks, JobId, JobOutcome, JobRegistry } from '@deepseek-ai/dsh-jobs'
 import { scrubbedParentEnv } from '@deepseek-ai/dsh-subprocess'
 import type { ToolDefinition } from '@deepseek-ai/dsh-tools'
 import { defineTool } from '@deepseek-ai/dsh-tools'
@@ -42,6 +42,14 @@ import type { McpPanelService } from './service.ts'
 
 /** Producer kind; also the job-id prefix. */
 export const PROBE_KIND = 'mcp-probe'
+
+/** Label prefix written by the `mcp_probe` tool and the panel probe action. */
+export const PROBE_LABEL_PREFIX = 'mcp_probe '
+
+/** Panel-facing job label for one probe of `serverName`. */
+export function probeJobLabel(serverName: string): string {
+  return `${PROBE_LABEL_PREFIX}${serverName}`
+}
 
 declare module '@deepseek-ai/dsh-jobs' {
   interface JobKindMap {
@@ -273,15 +281,96 @@ function probeTarget(service: McpPanelService, server: string): ProbeTarget | un
   return service.probeSpec(server)
 }
 
+/** One probe job's terminal fact, as the panel records it. */
+export interface ProbeSettlement {
+  /** How the probe ended. */
+  status: 'completed' | 'killed' | 'failed'
+  /** Sanitized one-line detail; `''` when the producer reported none. */
+  detail: string
+}
+
+/**
+ * Drop one settled probe job from the registry.
+ *
+ * A probe job has NO owner, and the registry lists unowned jobs for every
+ * session — so a settled probe would sit in every conversation's background-job
+ * header until the process restarts. The registry's own contract sanctions
+ * `remove` for exactly this caller shape: one that collected the terminal state
+ * itself and never handed the id to the model.
+ *
+ * @param jobs - the registry the job was started on.
+ * @param jobId - the settled job to drop.
+ * @param attempts - retries left for the tick before the registry committed settlement.
+ */
+function retireProbeJob(jobs: JobRegistry, jobId: JobId, attempts = 3): void {
+  // A registry face without `remove` (a narrow test double) simply keeps the
+  // record: retirement is an optimization for the real registry, never a
+  // correctness requirement.
+  if (typeof jobs.remove !== 'function') return
+  try {
+    jobs.remove(jobId)
+    return
+  } catch {
+    // Either the registry has not committed the settlement yet (our producer
+    // outcome surfaced first) or the record is already gone. Both are benign.
+  }
+  if (attempts <= 0) return
+  const timer = setTimeout(() => { retireProbeJob(jobs, jobId, attempts - 1) }, 50)
+  timer.unref?.()
+}
+
+/**
+ * Start one panel-only probe job and retire it once it settles.
+ *
+ * @param jobs - background-job registry to run on.
+ * @param target - resolved probe spec (http endpoint or stdio launch).
+ * @param timeoutMs - per-probe deadline.
+ * @param label - panel-facing job label ({@link probeJobLabel}).
+ * @param onSettle - called with the terminal outcome before the record is dropped.
+ * @returns the registry-issued job id.
+ */
+export function startProbeJob(
+  jobs: JobRegistry,
+  target: ProbeTarget,
+  timeoutMs: number,
+  label: string,
+  onSettle?: (jobId: JobId, settlement: ProbeSettlement) => void,
+): JobId {
+  // The hooks are assigned by `run`, which the registry calls synchronously
+  // during `start`; a throw from `start` therefore leaves no fetch or child
+  // process behind.
+  let hooks: JobHooks | undefined
+  const jobId = jobs.start({
+    kind: PROBE_KIND,
+    label,
+    // Unowned: no model completion notice, readable by the panel only.
+    run: () => {
+      hooks = probeJob(target, timeoutMs)
+      return hooks
+    },
+  })
+  const started = hooks
+  if (started !== undefined) {
+    void started.done.then(
+      (outcome) => {
+        onSettle?.(jobId, {
+          status: outcome.status,
+          detail: outcome.detail ?? '',
+        })
+      },
+      () => { /* a producer contract violation is the registry's to record */ },
+    ).finally(() => { retireProbeJob(jobs, jobId) })
+  }
+  return jobId
+}
+
 /**
  * Build the `mcp_probe` tool definition.
  *
- * @param service - panel service (server lookup + snapshot for panel display).
- * @param jobs - background-job registry the probe runs on.
- * @param timeoutMs - per-probe deadline.
+ * @param service - panel service (server lookup, job start, and the probe log).
  * @returns the registration-ready definition.
  */
-export function mcpProbeTool(service: McpPanelService, jobs: JobRegistry, timeoutMs: number): ToolDefinition {
+export function mcpProbeTool(service: McpPanelService): ToolDefinition {
   return defineTool({
     name: 'mcp_probe',
     description: 'Run a one-shot connectivity probe of a configured MCP server (streamable-http or stdio) as a background job. '
@@ -314,15 +403,13 @@ export function mcpProbeTool(service: McpPanelService, jobs: JobRegistry, timeou
           `mcp_probe: "${args.server}" is not a configured MCP server (see /mcp).`,
         )
       }
-      const jobId = jobs.start({
-        kind: PROBE_KIND,
-        label: `mcp_probe ${args.server}`,
-        // Unowned: no model completion notice, readable by the panel only.
-        run: () => probeJob(target, timeoutMs),
-      })
+      // Same start-and-retire path as the panel action: the record leaves the
+      // job list (visible to every session) as soon as the probe settles, and
+      // its outcome still lands in the panel's probe log.
+      const started = service.startProbe(args.server, target)
       return {
-        jobId,
-        note: 'Probe results are panel-only: left sidebar → MCP.',
+        jobId: started.jobId,
+        note: started.note,
       }
     },
   })

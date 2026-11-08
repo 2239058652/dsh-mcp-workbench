@@ -27,16 +27,48 @@ const STDIO_CONFIG = {
   args: ['server.js'],
 }
 
-function fakeJobs(startImpl?: (spec: { kind: string; label: string; owner?: unknown; run: () => unknown }) => string) {
+/**
+ * Fake job registry recording every start and every retire.
+ *
+ * `list` answers only what is still REGISTERED — a probe the panel retired is
+ * gone from it, which is exactly the contract the panel now relies on. With
+ * `runSpec`, `start` invokes the spec's `run` the way the real registry does,
+ * which is what gives the panel's settle hook real hooks to await.
+ */
+function fakeJobs(
+  options: { runSpec?: boolean; startImpl?: (spec: { kind: string; label: string; owner?: unknown; run: () => unknown }) => string } = {},
+) {
   const started: Array<{ kind: string; label: string; owner: unknown }> = []
+  const removed: string[] = []
+  const live = new Map<string, Record<string, unknown>>()
+  let sequence = 0
   return {
     started,
+    removed,
+    /** Register one record as if the registry still held it. */
+    seed: (view: Record<string, unknown>) => { live.set(String(view['id']), view) },
     attachController: () => () => undefined,
     start: (spec: { kind: string; label: string; owner?: unknown; run: () => unknown }) => {
       started.push({ kind: spec.kind, label: spec.label, owner: spec.owner })
-      return startImpl?.(spec) ?? 'mcp-probe-1'
+      const id = options.startImpl?.(spec) ?? `mcp-probe-${++sequence}`
+      live.set(id, {
+        id,
+        kind: spec.kind,
+        label: spec.label,
+        status: 'running',
+        startedAt: sequence,
+        finishedAt: undefined,
+        detail: undefined,
+      })
+      if (options.runSpec === true) spec.run()
+      return id
     },
-    list: () => [],
+    list: () => [...live.values()],
+    remove: (id: string) => {
+      if (!live.has(id)) throw new Error(`unknown job ${id}`)
+      live.delete(id)
+      removed.push(id)
+    },
   }
 }
 
@@ -132,19 +164,17 @@ describe('upstream observation', () => {
 
 describe('probe record cap', () => {
   it('keeps only the newest maxProbes records', async () => {
-    const probes = Array.from({ length: 15 }, (_value, index) => ({
-      id: `mcp-probe-${index + 1}`,
-      kind: 'mcp-probe',
-      label: `mcp_probe web ${index + 1}`,
-      status: 'completed',
-      startedAt: index + 1,
-      finishedAt: index + 2,
-      detail: `ok ${index + 1}`,
-    }))
-    const jobs = {
-      attachController: () => () => undefined,
-      start: () => 'mcp-probe-1',
-      list: () => probes,
+    const jobs = fakeJobs()
+    for (let index = 0; index < 15; index += 1) {
+      jobs.seed({
+        id: `mcp-probe-${index + 1}`,
+        kind: 'mcp-probe',
+        label: `mcp_probe web ${index + 1}`,
+        status: 'completed',
+        startedAt: index + 1,
+        finishedAt: index + 2,
+        detail: `ok ${index + 1}`,
+      })
     }
     const harness = await mountHarness([mcpRow('mcp-web', HTTP_CONFIG)], { maxProbes: 5 }, jobs as never)
     const snapshot = harness.service.status()
@@ -155,21 +185,134 @@ describe('probe record cap', () => {
   })
 
   it('maps job states outside the panel vocabulary to unknown instead of failing the codec', async () => {
-    const jobs = {
-      attachController: () => () => undefined,
-      start: () => 'mcp-probe-1',
-      list: () => [{
-        id: 'mcp-probe-1',
-        kind: 'mcp-probe',
-        label: 'mcp_probe web',
-        status: 'queued', // a future job-registry state this panel does not know
-        startedAt: 1,
-        finishedAt: null,
-        detail: 'queued…',
-      }],
-    }
+    const jobs = fakeJobs()
+    jobs.seed({
+      id: 'mcp-probe-1',
+      kind: 'mcp-probe',
+      label: 'mcp_probe web',
+      status: 'queued', // a future job-registry state this panel does not know
+      startedAt: 1,
+      finishedAt: null,
+      detail: 'queued…',
+    })
     const harness = await mountHarness([mcpRow('mcp-web', HTTP_CONFIG)], {}, jobs as never)
     expect(harness.service.status().probes[0]!.status).toBe('unknown')
+  })
+})
+
+describe('probe retirement', () => {
+  it('drops the job from the registry once it settles, keeping the record in the panel log', async () => {
+    // The point of the whole path: an unowned job is listed for EVERY session,
+    // so a settled probe must not stay registered. The outcome still has to
+    // reach the panel — that is what the service-owned log is for.
+    const jobs = fakeJobs({ runSpec: true })
+    const harness = await mountHarness([mcpRow('mcp-web', HTTP_CONFIG)], {}, jobs as never)
+    const original = globalThis.fetch
+    // The fetch leg fails fast; the probe settles as `failed`.
+    globalThis.fetch = (() => Promise.reject(new Error('connection refused'))) as never
+    try {
+      const started = harness.service.probe('web')
+      expect(harness.service.status().probes[0]!.status).toBe('running')
+      for (let tick = 0; tick < 100; tick += 1) {
+        if (jobs.removed.includes(started.jobId)) break
+        await new Promise(resolve => setTimeout(resolve, 10))
+      }
+      expect(jobs.removed).toContain(started.jobId)
+      expect(jobs.list()).toHaveLength(0)
+      const settled = harness.service.status().probes.find(view => view.id === started.jobId)!
+      expect(settled.status).toBe('failed')
+      expect(settled.finishedAt).not.toBeNull()
+    } finally {
+      globalThis.fetch = original
+    }
+  })
+
+  it('shows one row for a probe that is still live in the registry', async () => {
+    // A running probe is registered AND logged; the merge is by job id, so it
+    // must not appear twice.
+    const jobs = fakeJobs({ runSpec: true })
+    const harness = await mountHarness([mcpRow('mcp-web', HTTP_CONFIG)], {}, jobs as never)
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = (() => new Promise(() => { /* never settles */ })) as never
+    try {
+      harness.service.probe('web')
+      const rows = harness.service.status().probes.filter(view => view.serverName === 'web')
+      expect(rows).toHaveLength(1)
+      expect(rows[0]!.status).toBe('running')
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
+})
+
+describe('probe memory', () => {
+  /** Wait until the service has a verdict for the server (or give up). */
+  async function settleProbe(harness: Awaited<ReturnType<typeof mountHarness>>, serverName: string): Promise<void> {
+    for (let tick = 0; tick < 100; tick += 1) {
+      const row = harness.service.status().servers.find(view => view.serverName === serverName)
+      if (row?.probeState !== null) return
+      await new Promise(resolve => setTimeout(resolve, 10))
+    }
+  }
+
+  it('records a manual probe as the row liveness fact, so a re-open need not probe again', async () => {
+    // The panel's open path reads `probeState`: as long as a server has a
+    // verdict this process, opening the panel costs no request at all.
+    const jobs = fakeJobs({ runSpec: true })
+    const harness = await mountHarness([mcpRow('mcp-web', HTTP_CONFIG)], {}, jobs as never)
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = (() => Promise.reject(new Error('connection refused'))) as never
+    try {
+      harness.service.probe('web')
+      await settleProbe(harness, 'web')
+      const row = harness.service.status().servers.find(view => view.serverName === 'web')!
+      expect(row.probeState).toBe('unreachable')
+      expect(row.probeCheckedAt).not.toBeNull()
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
+
+  it('records a successful probe as reachable', async () => {
+    const jobs = fakeJobs({ runSpec: true })
+    const harness = await mountHarness([mcpRow('mcp-web', HTTP_CONFIG)], {}, jobs as never)
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = (() => Promise.resolve({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: async () => ({ result: { serverInfo: { name: 'web', version: '1.0.0' } } }),
+    })) as never
+    try {
+      harness.service.probe('web')
+      await settleProbe(harness, 'web')
+      expect(harness.service.status().servers[0]!.probeState).toBe('reachable')
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
+
+  it('forgets both the verdict and the log record for a restarted row', async () => {
+    // A restart re-handshakes the row: every probe fact this process holds
+    // describes the connection that was just torn down, so keeping it would
+    // leave a healthy row wearing the old red dot for the rest of the process.
+    const jobs = fakeJobs({ runSpec: true })
+    const harness = await mountHarness([mcpRow('mcp-web', HTTP_CONFIG)], {}, jobs as never)
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = (() => Promise.reject(new Error('connection refused'))) as never
+    try {
+      harness.service.probe('web')
+      await settleProbe(harness, 'web')
+      expect(harness.service.status().servers[0]!.probeState).toBe('unreachable')
+      // The fake entry's fiber/init are enough for `reload` to run its path.
+      await harness.service.reload('web')
+      const after = harness.service.status()
+      expect(after.servers[0]!.probeState).toBeNull()
+      expect(after.servers[0]!.probeCheckedAt).toBeNull()
+      expect(after.probes.some(view => view.serverName === 'web')).toBe(false)
+    } finally {
+      globalThis.fetch = originalFetch
+    }
   })
 })
 
