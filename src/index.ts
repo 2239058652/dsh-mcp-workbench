@@ -59,6 +59,8 @@ export {
   validateServerConfig,
   mergeServerConfig,
   renderPatchFragment,
+  patchComment,
+  patchMarker,
   resolvePatchOp,
   nextEntryId,
   defaultEntryId,

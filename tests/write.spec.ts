@@ -119,4 +119,22 @@ describe('replaceOwnedBlock', () => {
     expect(replaced).toBe(3)
     expect((await readFile(file, 'utf8')).split(MARKER).length - 1).toBe(1)
   })
+
+  it('replaces one row\'s block without touching a prefix-sharing row', async () => {
+    // `mcp-a` and `mcp-a-b` are different rows: the marker carries the closing
+    // ` (` of the date stamp so a prefix match can never swallow the longer id.
+    const dir = await tempDir()
+    const file = join(dir, 'cordis.patch.yml')
+    const editBlock = (entryId: string, url: string): string =>
+      `# dsh-mcp-workbench: edit server ${entryId} (2026-11-08)\n- id: ${entryId}\n  name: '@deepseek-ai/dsh-mcp-client'\n  config:\n    url: ${url}`
+    // Blank line between blocks, exactly as `appendPatchFragment` leaves them.
+    await writeFile(file, `${editBlock('mcp-a', 'one')}\n\n${editBlock('mcp-a-b', 'other')}\n`, 'utf8')
+    await replaceOwnedBlock(file, '# dsh-mcp-workbench: edit server mcp-a (', editBlock('mcp-a', 'two'), 5)
+    const content = await readFile(file, 'utf8')
+    expect(content).toContain('url: two')
+    expect(content).not.toContain('url: one')
+    // The sibling row survives verbatim.
+    expect(content).toContain('edit server mcp-a-b (2026-11-08)')
+    expect(content).toContain('url: other')
+  })
 })

@@ -398,6 +398,30 @@ export function patchComment(op: ResolvedPatchOp, now = new Date()): string {
 }
 
 /**
+ * The marker a state operation's block opens with, for
+ * {@link replaceOwnedBlock}; `null` means the block is append-only.
+ *
+ * `add` is a genuine EVENT — an insert that creates a row — so it stays
+ * append-only. `edit` / `disable` / `enable` instead restate one row's STATE,
+ * and only the last one of each kind counts: appending them on every save grew
+ * the file without bound (three identical `edit server` blocks for one row).
+ *
+ * Each marker stops at the ` (` that opens the date stamp, so the block of
+ * `mcp-a` can never be mistaken for the block of `mcp-a-b`.
+ *
+ * @param op - the resolved operation.
+ * @returns the marker prefix, or `null` for an append-only operation.
+ */
+export function patchMarker(op: ResolvedPatchOp): string | null {
+  switch (op.kind) {
+    case 'add': return null
+    case 'edit': return `# dsh-mcp-workbench: edit server ${op.entryId} (`
+    case 'disable': return `# dsh-mcp-workbench: remove server ${op.entryId} — disabled (`
+    case 'enable': return `# dsh-mcp-workbench: re-enable server ${op.entryId} (`
+  }
+}
+
+/**
  * Emit one resolved op as a loader patch fragment (valid YAML, append-only).
  * Generated fragments never contain `!!js` expressions; values are plain
  * strings emitted with conservative quoting.

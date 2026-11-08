@@ -51,6 +51,7 @@ import { hiddenToolNames, restrictAgentTools, toggleHidden } from './disable.ts'
 import { NAME_PATTERN } from './config.ts'
 import type { ToolVisibilityResult } from './wire.ts'
 import {
+  patchMarker,
   renderPatchFragment,
   renderConfigOverride,
   TOOL_FILTER_MARKER,
@@ -619,7 +620,14 @@ private readonly trialCaller = createTrialCaller()
       approvalPath = 'interactive-confirmation'
     }
 
-    const { backupPath, bytes } = await appendPatchFragment(file, fragment, this.config.backupCount)
+    // A state operation (edit / disable / enable) restates ONE row, so only
+    // its last block counts: replace this plugin's own previous block of the
+    // same kind for the same row instead of appending. `add` stays a genuine
+    // append — an insert creates a row, and two adds are two different rows.
+    const marker = patchMarker(resolution.op)
+    const { backupPath, bytes, replaced } = marker === null
+      ? { ...await appendPatchFragment(file, fragment, this.config.backupCount), replaced: 0 }
+      : await replaceOwnedBlock(file, marker, fragment, this.config.backupCount)
     // Issue #27 hardening: the loader dialect previously skipped the emitted
     // `- set:` fragments silently. The web profile hot-reloads patch edits, so
     // verify the loader actually re-applied the operation before reporting
@@ -635,7 +643,9 @@ private readonly trialCaller = createTrialCaller()
       approvalPath,
       bytes,
       ops: 1,
-      note: 'The web surface hot-reloads cordis.patch.yml edits; other surfaces restart.',
+      note: replaced === 0
+        ? 'The web surface hot-reloads cordis.patch.yml edits; other surfaces restart.'
+        : `The web surface hot-reloads cordis.patch.yml edits; ${replaced} earlier block(s) of the same operation were replaced.`,
     }
   }
 

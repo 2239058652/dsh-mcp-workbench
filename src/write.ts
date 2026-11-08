@@ -1,17 +1,19 @@
 /**
- * Profile patch-layer writes for the console. APPEND-ONLY for CRUD rows: the
- * console appends one generated operation block at a time, after copying the
- * current file to a timestamped backup. The Loader applies patch lists in
- * order, so an appended operation is the effective configuration; user
- * comments and unrelated rows stay byte-for-byte untouched. Backups are
- * pruned to the newest `backupCount`.
+ * Profile patch-layer writes for the console.
  *
- * The ONE exception is {@link replaceOwnedBlock}: the console's own tool
- * filter is a piece of STATE, not an event, so appending a block per click
- * grew the file without bound (two clicks left two blocks, each restating the
- * whole filter). That path removes only blocks this plugin wrote — recognised
- * by the marker comment it puts above every one of them — and appends the new
- * one. Anything without that marker is never a candidate for removal.
+ * `add` (an insert that creates a row) is APPEND-ONLY: the Loader applies patch
+ * lists in order, so an appended insert is simply one more row. Every write
+ * copies the current file to a timestamped backup first, and backups are pruned
+ * to the newest `backupCount`.
+ *
+ * Everything that restates ONE row's STATE goes through
+ * {@link replaceOwnedBlock} instead: edit / disable / enable, and the console's
+ * own tool filter. Those are state, not events — appending them per save grew
+ * the file without bound (three identical `edit server` blocks for one row,
+ * each restating the whole filter). That path removes only blocks this plugin
+ * wrote — recognised by the marker comment it puts above every one of them —
+ * and appends the new one. Anything without that marker is never a candidate
+ * for removal.
  *
  * Every write is reversible: the backup restores the previous state.
  *
@@ -67,6 +69,12 @@ export async function appendPatchFragment(
  * and only until the next blank line — the renderer never puts a blank line
  * inside a block. User rows, comments and other plugins' blocks are never
  * matched, so they survive untouched.
+ *
+ * A marker that names one row ({@link patchMarker}) ends at the ` (` opening
+ * its date stamp, so the block of `mcp-a` can never swallow the block of
+ * `mcp-a-b`. Blocks of the same row but a different kind (edit vs disable) use
+ * different markers and therefore coexist — only the newest of each kind wins,
+ * which is exactly how the Loader reads them.
  *
  * @param filePath - absolute path of the profile patch layer.
  * @param marker - marker comment prefix the plugin writes above its block.
