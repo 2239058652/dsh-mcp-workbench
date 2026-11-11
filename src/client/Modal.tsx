@@ -26,15 +26,23 @@ export interface ModalProps {
  */
 export function Modal({ title, closeLabel, onClose, children, footer, width }: ModalProps): ReactNode {
   const panel = useRef<HTMLDivElement | null>(null)
+  // Callers pass an inline arrow for `onClose`, so its identity changes on
+  // every render. Keeping it in a ref lets the listeners stay mounted for the
+  // dialog's whole life instead of being torn down and re-attached per render.
+  const close = useRef(onClose)
+  close.current = onClose
 
+  // Mount only: take focus once. Re-running this on every render (the old
+  // `[onClose]` dependency) pulled focus back to the panel while the user was
+  // typing in a field inside the dialog, so every keystroke lost the caret.
   useEffect(() => {
+    panel.current?.focus()
     const onKey = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') close.current()
     }
     document.addEventListener('keydown', onKey)
-    panel.current?.focus()
     return () => { document.removeEventListener('keydown', onKey) }
-  }, [onClose])
+  }, [])
 
   return (
     <div
