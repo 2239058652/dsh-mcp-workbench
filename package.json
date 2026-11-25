@@ -28,7 +28,9 @@
       "types": "./lib/types/client/index.d.ts",
       "default": "./lib/client.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./icon": "./icon.svg",
+    "./locale/*.json": "./locale/*.json"
   },
   "files": [
     "lib",
@@ -38,7 +40,9 @@
     "CHANGELOG.md",
     "THIRD_PARTY_NOTICES.md",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "icon.svg",
+    "locale/*.json"
   ],
   "dsh": {
     "manifestVersion": 1,

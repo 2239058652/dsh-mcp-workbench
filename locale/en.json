@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "MCP workbench",
+    "description": "A management console for the official DSH MCP client: the /mcp command, health diagnostics, server CRUD, tool trials, connection status and optional probes."
+  }
+}
